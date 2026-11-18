@@ -1,63 +1,77 @@
 {% extends "base.html" %}{% load static nacb %}
 {% block title %}{{ T.home }}{% endblock %}
+{% block body_class %}home{% endblock %}
 {% block content %}
-<section class="hero">
-  <div class="container hero-split">
-    <div class="hero-copy">
-      <h1>A home for Botswana's artists</h1>
-      <p class="lead">{{ T.hero_text }}</p>
-      <div class="flex">
-        <a class="btn btn-light" href="{% url 'accounts:signup' %}">{{ T.register_cta }}</a>
-        <a class="btn btn-on-dark" href="{% url 'grants:call_list' %}">{{ T.grants_cta }}</a>
+<section class="hx">
+  <canvas class="loom" id="loom" aria-hidden="true"></canvas>
+  <div class="container hx-grid">
+    <div class="hx-copy">
+      <h1 class="hx-title">Botswana creates.<span>We help it rise.</span></h1>
+      <p class="hx-lead">Register as a creative, apply for funding, join festivals and programmes, and grow your work into a career. All of NACB, in one place.</p>
+      <div class="hx-actions">
+        <a class="btn-glow" href="{% url 'accounts:signup' %}">Join the artist register</a>
+        <a class="btn-line" href="{% url 'grants:call_list' %}">See funding open now</a>
       </div>
     </div>
-    <aside class="hero-panel" aria-label="Happening now">
+  </div>
+  <div class="container">
+    <div class="nowbar" aria-label="Happening now">
       {% with c=calls.0 %}{% if c %}
-      <div class="hp-block">
-        <p class="hp-label">{% icon "funding" 18 %} Closing soon</p>
-        <a class="hp-title" href="{{ c.get_absolute_url }}">{{ c.title }}</a>
-        <div class="deadline"><span class="deadline-bar"><span style="width:{{ c.elapsed_pct }}%"></span></span><span class="small"><strong>{{ c.days_left }}</strong> day{{ c.days_left|pluralize }} left</span></div>
-        <p class="hp-meta">Up to {{ c.max_amount|money }} · closes {{ c.closes_at|date:"j F" }}</p>
-      </div>
+      <a class="now-item now-wide" href="{{ c.get_absolute_url }}">
+        <span class="now-icon">{% icon "funding" 22 %}</span>
+        <span class="now-text"><small>Closing in {{ c.days_left }} day{{ c.days_left|pluralize }}</small><strong>{{ c.title }}</strong>
+          <span class="deadline-bar"><span style="width:{{ c.elapsed_pct }}%"></span></span></span>
+      </a>
       {% endif %}{% endwith %}
       {% with e=events.0 %}{% if e %}
-      <div class="hp-block">
-        <p class="hp-label">{% icon "programme" 18 %} Next event</p>
-        <div class="hp-event"><span class="date-chip"><span class="d">{{ e.starts_at|date:"j" }}</span><span class="m">{{ e.starts_at|date:"M" }}</span></span>
-          <div><a class="hp-title" href="{{ e.get_absolute_url }}">{{ e.title }}</a><p class="hp-meta">{{ e.venue }}, {{ e.get_district_display }}</p></div></div>
-      </div>
+      <a class="now-item now-wide" href="{{ e.get_absolute_url }}">
+        <span class="now-icon">{% icon "programme" 22 %}</span>
+        <span class="now-text"><small>Next event · {{ e.starts_at|date:"j M" }}</small><strong>{{ e.title }}</strong></span>
+      </a>
       {% endif %}{% endwith %}
-      <div class="hp-links">
-        <a href="{% url 'portal:directory' %}">{% icon "creatives" 18 %} Find an artist</a>
-        <a href="{% url 'endorsements:verify' %}">{% icon "shield" 18 %} Verify a letter</a>
-        <a href="{% url 'partnerships:partner' %}">{% icon "handshake" 18 %} Partner with us</a>
-      </div>
-    </aside>
-  </div>
-</section>
-
-<div class="container">
-  <ul class="icon-stats" aria-label="NACB in numbers">
-    <li><span class="icon-badge">{% icon "creatives" 26 %}</span><strong>{{ stats.artists }}</strong><span>verified creatives</span></li>
-    <li><span class="icon-badge">{% icon "artforms" 26 %}</span><strong>{{ stats.disciplines }}</strong><span>art forms</span></li>
-    <li><span class="icon-badge">{% icon "districts" 26 %}</span><strong>{{ stats.districts }}</strong><span>districts</span></li>
-    <li><span class="icon-badge">{% icon "grants" 26 %}</span><strong>{{ stats.grants }}</strong><span>grants awarded through this site</span></li>
-  </ul>
-</div>
-
-<section class="section">
-  <div class="container">
-    <h2>Online services</h2>
-    <div class="services-row">
-      <a class="service-tile" href="{% url 'accounts:signup' %}"><span class="icon-badge">{% icon "register" 28 %}</span><div><h3>Join the register</h3><p class="muted mb-0">Get your NACB artist number.</p></div></a>
-      <a class="service-tile" href="{% url 'grants:call_list' %}"><span class="icon-badge">{% icon "funding" 28 %}</span><div><h3>Apply for a grant</h3><p class="muted mb-0">Apply and track your decision online.</p></div></a>
-      <a class="service-tile" href="{% url 'events:list' %}"><span class="icon-badge">{% icon "programme" 28 %}</span><div><h3>Join a programme</h3><p class="muted mb-0">Workshops, festivals and competitions.</p></div></a>
-      <a class="service-tile" href="{% url 'endorsements:info' %}"><span class="icon-badge">{% icon "letter" 28 %}</span><div><h3>Support letters</h3><p class="muted mb-0">Endorsements within 10 working days.</p></div></a>
+      <div class="now-item now-stat"><span class="now-icon">{% icon "creatives" 22 %}</span><span class="now-text"><strong class="big" data-count="{{ stats.artists }}">{{ stats.artists }}</strong><small>verified creatives</small></span></div>
+      <div class="now-item now-stat"><span class="now-icon">{% icon "artforms" 22 %}</span><span class="now-text"><strong class="big" data-count="{{ stats.disciplines }}">{{ stats.disciplines }}</strong><small>art forms</small></span></div>
+      <div class="now-item now-stat"><span class="now-icon">{% icon "districts" 22 %}</span><span class="now-text"><strong class="big" data-count="{{ stats.districts }}">{{ stats.districts }}</strong><small>districts</small></span></div>
     </div>
   </div>
 </section>
 
-<section class="section section-alt">
+<section class="sec">
+  <div class="container">
+    <div class="sec-head"><h2>Start here</h2><p>Everything NACB offers creatives, open online day and night.</p></div>
+    <div class="bento">
+      <a class="b-card b-hero" href="{% url 'accounts:signup' %}">
+        <canvas class="form-weave" data-seed="9" aria-hidden="true"></canvas>
+        <span class="b-icon">{% icon "register" 28 %}</span>
+        <h3>Join the National Artist Register</h3>
+        <p>One profile for your art form, portfolio and district. Get verified and receive your NACB number.</p>
+        <span class="b-go">Create your profile {% icon "reach" 18 %}</span>
+      </a>
+      <a class="b-card b-sun" href="{% url 'grants:call_list' %}">
+        <span class="b-icon">{% icon "funding" 28 %}</span>
+        <h3>Apply for a grant</h3>
+        <p>Apply online and follow your application to the committee decision.</p>
+      </a>
+      <a class="b-card b-sky" href="{% url 'events:list' %}">
+        <span class="b-icon">{% icon "programme" 28 %}</span>
+        <h3>Join a programme</h3>
+        <p>Festivals, workshops and competitions in every district.</p>
+      </a>
+      <a class="b-card" href="{% url 'endorsements:info' %}">
+        <span class="b-icon">{% icon "letter" 28 %}</span>
+        <h3>Support letters</h3>
+        <p>Endorsements for travel, festivals and funding.</p>
+      </a>
+      <a class="b-card" href="{% url 'partnerships:partner' %}">
+        <span class="b-icon">{% icon "handshake" 28 %}</span>
+        <h3>Partner with us</h3>
+        <p>Sponsor an event or fund a CSR programme.</p>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section class="sec sec-tint">
   <div class="container">
     <div class="whats-on" data-tabs>
       <div class="tab-bar" role="tablist" aria-label="What's on">
@@ -67,25 +81,22 @@
         <button role="tab" id="tab-jobs" aria-controls="panel-jobs" aria-selected="false">Jobs{% if vacancies %} <span class="tab-count">{{ vacancies|length }}</span>{% endif %}</button>
         <button role="tab" id="tab-tenders" aria-controls="panel-tenders" aria-selected="false">Tenders{% if tenders %} <span class="tab-count">{{ tenders|length }}</span>{% endif %}</button>
       </div>
-
       <div class="tab-panel" role="tabpanel" id="panel-news" aria-labelledby="tab-news">
         <div class="tab-list">
           {% for n in news %}
           <a class="news-item{% if n.image %} has-image{% endif %}" href="{{ n.get_absolute_url }}">
             {% if n.image %}<img src="{{ n.image.url }}" alt="">{% endif %}
-            <div><p class="news-meta">{{ n.get_category_display }} · {{ n.publish_at|date:"j F Y" }}</p><h3>{{ n.title }}</h3><p class="news-summary">{{ n.summary|truncatewords:22 }}</p></div>
+            <div><p class="news-meta">{{ n.get_category_display }} · {{ n.publish_at|date:"j F Y" }}</p><h3>{{ n.title }}</h3><p class="news-summary">{{ n.summary|truncatewords:20 }}</p></div>
           </a>
           {% empty %}<p class="muted">No news yet.</p>{% endfor %}
         </div>
         <a class="tab-more" href="{% url 'portal:news_list' %}">All news</a>
       </div>
-
       <div class="tab-panel" role="tabpanel" id="panel-events" aria-labelledby="tab-events">
         <div class="events-split">
           <ul class="list-plain">
             {% for e in events %}<li class="event-row"><span class="date-chip"><span class="d">{{ e.starts_at|date:"j" }}</span><span class="m">{{ e.starts_at|date:"M" }}</span></span><div><a href="{{ e.get_absolute_url }}"><strong>{{ e.title }}</strong></a><div class="small muted">{{ e.venue }}, {{ e.get_district_display }}</div></div></li>
             {% empty %}<li class="muted">No upcoming events.</li>{% endfor %}
-            {% for a in past_albums|slice:":2" %}<li class="event-row past"><span class="date-chip"><span class="d">{{ a.event.starts_at|date:"j" }}</span><span class="m">{{ a.event.starts_at|date:"M" }}</span></span><div><a href="{% if a.event %}{{ a.event.get_absolute_url }}{% else %}{{ a.get_absolute_url }}{% endif %}">{{ a.title }}</a><div class="small muted">Held {{ a.event.starts_at|date:"F Y" }}{% if a.images.all %} · <a href="{{ a.get_absolute_url }}">{{ a.images.all|length }} photos</a>{% endif %}</div></div></li>{% endfor %}
           </ul>
           <div class="cal-box">
             <p class="mb-1"><strong>{{ cal_label }}</strong></p>
@@ -96,7 +107,6 @@
         </div>
         <a class="tab-more" href="{% url 'events:list' %}">Full calendar</a>
       </div>
-
       <div class="tab-panel" role="tabpanel" id="panel-grants" aria-labelledby="tab-grants">
         <ul class="list-plain">
           {% for c in calls %}<li><a href="{{ c.get_absolute_url }}"><strong>{{ c.title }}</strong></a><div class="small muted">Up to {{ c.max_amount|money }} · closes {{ c.closes_at|date:"j M Y" }}</div>
@@ -105,7 +115,6 @@
         </ul>
         <a class="tab-more" href="{% url 'grants:call_list' %}">All grant calls</a>
       </div>
-
       <div class="tab-panel" role="tabpanel" id="panel-jobs" aria-labelledby="tab-jobs">
         <ul class="list-plain">
           {% for v in vacancies %}<li><a href="{{ v.get_absolute_url }}"><strong>{{ v.title }}</strong></a><div class="small muted">{{ v.department }} · {{ v.get_employment_type_display }} · closes {{ v.closing_date|date:"j M Y" }}</div></li>
@@ -113,7 +122,6 @@
         </ul>
         <a class="tab-more" href="{% url 'portal:vacancies' %}">All jobs</a>
       </div>
-
       <div class="tab-panel" role="tabpanel" id="panel-tenders" aria-labelledby="tab-tenders">
         <ul class="list-plain">
           {% for t in tenders %}<li><a href="{{ t.get_absolute_url }}"><strong>{{ t.title }}</strong></a><div class="small muted">{{ t.reference }} · closes {{ t.closing_date|date:"j M Y" }}</div></li>
@@ -125,20 +133,24 @@
   </div>
 </section>
 
-<section class="section">
+<section class="sec">
   <div class="container">
-    <div class="section-head"><div><h2 class="mb-0">Artists</h2><p class="muted small mb-0">Every song, pot, poem and dance carries a piece of Botswana.</p></div><a href="{% url 'portal:directory' %}">Artist directory</a></div>
-    <div class="mosaic mosaic-compact">
+    <div class="sec-head"><h2>Every art form, every district</h2><a class="sec-link" href="{% url 'portal:directory' %}">Find an artist</a></div>
+    <div class="forms-row">
       {% for key, label, count in mosaic %}
-      <a class="mosaic-tile mosaic-{{ key }}" href="{% url 'portal:directory' %}?group={{ key }}"><span class="mosaic-name">{{ label }}</span><span class="mosaic-count">{{ count }} registered</span></a>
+      <a class="form-card form-{{ forloop.counter }}" href="{% url 'portal:directory' %}?group={{ key }}">
+        <canvas class="form-weave" data-seed="{{ forloop.counter }}" aria-hidden="true"></canvas>
+        <span class="form-name">{{ label }}</span>
+        <span class="form-count">{{ count }} registered</span>
+      </a>
       {% endfor %}
     </div>
     {% if spotlight %}
-    <div class="grid artist-grid mt-2">
+    <div class="people">
       {% for p in spotlight %}
-      <a class="artist-row" href="{{ p.get_absolute_url }}">
+      <a class="person" href="{{ p.get_absolute_url }}">
         {% if p.avatar %}<img class="monogram" src="{{ p.avatar.url }}" alt="">{% else %}<span class="monogram tone-{{ p|tone }}" aria-hidden="true">{{ p.display_name|initials }}</span>{% endif %}
-        <div><h4>{{ p.display_name }}</h4><p class="small muted mb-0">{{ p.primary_discipline|default:"" }} · {{ p.get_district_display }}</p></div>
+        <span><strong>{{ p.display_name }}</strong><small>{{ p.primary_discipline|default:"" }} · {{ p.get_district_display }}</small></span>
       </a>
       {% endfor %}
     </div>
@@ -146,31 +158,32 @@
   </div>
 </section>
 
-<section class="future future-compact">
-  <div class="container">
-    <div class="future-head">
+<section class="fx">
+  <div class="container fx-grid">
+    <div class="fx-copy">
       <h2>Creativity of tomorrow</h2>
-      <p>NACB registers, funds and trains digital creators the same way it supports painters and potters.</p>
+      <p>Games, immersive worlds, streaming and creative technology are art forms too. NACB registers, funds and trains digital creators alongside painters and potters.</p>
+      <a class="btn-line" href="{% url 'portal:directory' %}?group=film">Meet digital creators</a>
     </div>
-    <div class="future-grid">
-      <a class="future-card" href="{% url 'portal:directory' %}?group=film"><span class="future-icon">{% icon "vr" 32 %}</span><h3>Immersive worlds</h3><p>Virtual and augmented reality stories and heritage.</p></a>
-      <a class="future-card" href="{% url 'portal:directory' %}?group=film"><span class="future-icon">{% icon "games" 32 %}</span><h3>Games</h3><p>Interactive stories rooted in Setswana folklore.</p></a>
-      <a class="future-card" href="{% url 'grants:call_list' %}"><span class="future-icon">{% icon "broadcast" 32 %}</span><h3>Streaming</h3><p>Music, film and podcasts earning beyond our borders.</p></a>
-      <a class="future-card" href="{% url 'events:list' %}"><span class="future-icon">{% icon "pentool" 32 %}</span><h3>Creative tech skills</h3><p>Digital design, animation and responsible AI.</p></a>
+    <div class="fx-cards">
+      <a class="fx-card" href="{% url 'portal:directory' %}?group=film">{% icon "vr" 28 %}<strong>Immersive worlds</strong><small>VR and AR stories and heritage</small></a>
+      <a class="fx-card" href="{% url 'portal:directory' %}?group=film">{% icon "games" 28 %}<strong>Games</strong><small>Interactive Setswana folklore</small></a>
+      <a class="fx-card" href="{% url 'grants:call_list' %}">{% icon "broadcast" 28 %}<strong>Streaming</strong><small>Earning beyond our borders</small></a>
+      <a class="fx-card" href="{% url 'events:list' %}">{% icon "pentool" 28 %}<strong>Creative tech skills</strong><small>Design, animation, responsible AI</small></a>
     </div>
   </div>
 </section>
 
-<section class="section">
+<section class="sec">
   <div class="container partners-strip">
     <div>
       <h2 class="mb-1">Partners and sponsors</h2>
       {% if partners %}<div class="partner-logos">{% for p in partners %}{% if p.website %}<a class="partner-logo" href="{{ p.website }}" target="_blank" rel="noopener">{% else %}<span class="partner-logo">{% endif %}{% if p.logo %}<img src="{{ p.logo.url }}" alt="{{ p.name }}">{% else %}<span class="partner-name">{{ p.name }}</span>{% endif %}{% if p.website %}</a>{% else %}</span>{% endif %}{% endfor %}</div>
       {% else %}<p class="muted">Organisations that invest in Botswana's creative sector are recognised here.</p>{% endif %}
     </div>
-    <div class="stack" style="min-width:220px">
-      <a class="btn btn-primary" href="{% url 'partnerships:partner' %}#sponsor">Sponsor an event</a>
-      <a class="btn btn-outline" href="{% url 'partnerships:partner' %}#csr">Fund a CSR programme</a>
+    <div class="partner-cta">
+      <a class="btn-glow" href="{% url 'partnerships:partner' %}#sponsor">Sponsor an event</a>
+      <a class="btn-line dark" href="{% url 'partnerships:partner' %}#csr">Fund a CSR programme</a>
     </div>
   </div>
 </section>

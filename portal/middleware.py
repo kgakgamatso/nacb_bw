@@ -2,7 +2,7 @@ class SecurityHeadersMiddleware:
     """Content-Security-Policy and related headers (OWASP A05)."""
 
     CSP = (
-        "default-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; "
+        "default-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; "
         "script-src 'self' 'unsafe-inline'; frame-src https://www.youtube-nocookie.com https://www.google.com; "
         "object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
     )

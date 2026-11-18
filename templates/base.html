@@ -5,13 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}Home{% endblock %} | National Arts Council of Botswana</title>
   <meta name="description" content="{% block description %}The National Arts Council of Botswana develops, promotes and protects Botswana's creative and cultural sector.{% endblock %}">
-  <meta name="theme-color" content="#427f9e">
+  <meta name="theme-color" content="#0b0e22">
   <link rel="icon" href="{% static 'img/logo-dark.png' %}">
   <script>document.documentElement.classList.add("js")</script>
-  <link rel="stylesheet" href="{% static 'css/nacb.css' %}?v=25">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Manrope:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="{% static 'css/nacb.css' %}?v=26">
+  <link rel="stylesheet" href="{% static 'css/night.css' %}?v=2">
   {% block head %}{% endblock %}
 </head>
-<body>
+<body class="{% block body_class %}{% endblock %}">
+<div class="cursor-dot off" aria-hidden="true"></div><div class="cursor-ring off" aria-hidden="true"></div>
 {% include "includes/icons.html" %}
 <a class="skip-link" href="#main">{{ T.skip }}</a>
 <div class="utility">
@@ -139,6 +144,7 @@
   </div>
 </div>
 <script src="{% static 'js/nacb.js' %}?v=24" defer></script>
+<script src="{% static 'js/loom.js' %}?v=1" defer></script>
 {% block scripts %}{% endblock %}
 </body>
 </html>
