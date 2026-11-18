@@ -13,3 +13,6 @@ staticfiles/
 *.log
 demo-credentials.local.txt
 *.local.txt
+
+# Private, never pushed: full chat transcript and local notes
+_private/
