@@ -1,0 +1,28 @@
+{% extends "backoffice/base.html" %}{% load nacb %}
+{% block title %}Assess {{ app.reference }}{% endblock %}
+{% block staff %}
+<p class="small"><a href="{{ s.get_absolute_url }}">{{ s.title }}</a></p>
+<h1 class="mb-0">{{ app.project_title }}</h1>
+<p class="muted">{{ app.reference }} · {{ app.profile.display_name }} · {{ app.category }} · {{ app.get_district_display }}</p>
+<div class="layout-side wide-aside">
+  <div class="stack">
+    <div class="card"><h2>Project</h2><dl class="dl">
+      <dt>Summary</dt><dd>{{ app.summary }}</dd><dt>Description</dt><dd>{{ app.description|linebreaks }}</dd>
+      <dt>Objectives</dt><dd>{{ app.objectives|linebreaks }}</dd><dt>Timeline</dt><dd>{{ app.timeline|linebreaks }}</dd>
+      <dt>Beneficiaries</dt><dd>{{ app.beneficiaries|linebreaks }}</dd><dt>Impact</dt><dd>{{ app.expected_impact|linebreaks }}</dd>
+      <dt>Dates</dt><dd>{{ app.start_date|date:"j M Y" }} to {{ app.end_date|date:"j M Y" }}</dd></dl></div>
+    <div class="card"><h2>Budget</h2><p>Requested {{ app.amount_requested|money }} of {{ app.total_project_cost|money }}</p>
+      <div class="table-wrap"><table><tbody>{% for b in budget_items %}<tr><td>{{ b.get_category_display }}</td><td>{{ b.description }}</td><td class="num">{{ b.total|money }}</td></tr>{% endfor %}</tbody></table></div></div>
+    <div class="card"><h2>Checks and documents</h2>
+      <ul class="checklist">{% for label, ok, detail in checks %}<li class="{% if ok %}ok{% else %}no{% endif %}"><span class="icon">{% if ok %}✓{% else %}✗{% endif %}</span><div>{{ label }}</div></li>{% endfor %}</ul>
+      <ul class="list-plain mt-2">{% for d in documents %}<li><a href="{% url 'grants:document' d.pk %}" target="_blank">{{ d.doc_type.name }}</a></li>{% endfor %}</ul></div>
+  </div>
+  <form class="card" method="post" novalidate>{% csrf_token %}
+    <h2>Your score</h2>
+    {% if s.status != 'in_progress' %}<p class="notice notice-warn">Scoring is closed.</p>{% endif %}
+    {% include "includes/form.html" %}
+    <p class="small muted">Declare any conflict of interest to the chair and do not score that application.</p>
+    <div class="form-actions"><button class="btn btn-outline" type="submit">Save</button><button class="btn btn-primary" type="submit" name="next">Save and next</button></div>
+  </form>
+</div>
+{% endblock %}

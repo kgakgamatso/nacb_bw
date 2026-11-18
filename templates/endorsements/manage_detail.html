@@ -1,0 +1,39 @@
+{% extends "backoffice/base.html" %}{% load nacb %}
+{% block title %}{{ req.reference }}{% endblock %}
+{% block staff %}
+<p class="small"><a href="{% url 'endorsements:manage_list' %}">← Endorsements</a></p>
+<div class="flex between"><div><h1 class="mb-0">{{ req.event_name }}</h1><p class="muted">{{ req.reference }} · {{ req.get_purpose_display }}</p></div>
+  <div>{% badge req.status req.get_status_display %} {% if req.is_overdue %}<span class="badge badge-bad">Overdue</span>{% endif %}</div></div>
+<div class="layout-side wide-aside mt-2">
+  <div class="stack">
+    <div class="card"><h2>Request</h2><dl class="dl">
+      <dt>Applicant</dt><dd><a href="{% url 'backoffice:registry_detail' req.profile.pk %}">{{ req.profile.display_name }}</a> · {{ req.profile.registration_number }} {% badge req.profile.status req.profile.get_status_display %}</dd>
+      <dt>Discipline</dt><dd>{{ req.profile.primary_discipline }}</dd>
+      <dt>Addressed to</dt><dd>{{ req.recipient_name }}<br><span class="small muted">{{ req.recipient_address|linebreaksbr }}</span></dd>
+      <dt>Event date</dt><dd>{{ req.event_date|date:"j M Y"|default:"None" }}</dd><dt>Destination</dt><dd>{{ req.destination|default:"None" }}</dd>
+      <dt>Justification</dt><dd>{{ req.justification|linebreaks }}</dd>
+      <dt>Supporting doc</dt><dd>{% if req.supporting_document %}<a href="{% url 'endorsements:document' req.reference %}" target="_blank">Open document</a>{% else %}None{% endif %}</dd>
+      <dt>Submitted</dt><dd>{{ req.created_at|date:"j M Y H:i" }} · due {{ req.due_date|date:"j M Y" }}</dd></dl></div>
+    {% if letter_form %}
+    <div class="card"><h2>Endorsement letter</h2>
+      <form method="post" action="{% url 'endorsements:manage_letter' req.reference %}" class="flex mb-2">{% csrf_token %}
+        <label class="sr-only" for="tpl">Template</label><select id="tpl" name="template" style="max-width:300px">{% for t in templates %}<option value="{{ t.pk }}" {% if req.template_id == t.pk %}selected{% endif %}>{{ t.name }}</option>{% endfor %}</select>
+        <button class="btn btn-ghost btn-sm" name="regenerate" type="submit">Regenerate from template</button></form>
+      <form method="post" action="{% url 'endorsements:manage_letter' req.reference %}" novalidate>{% csrf_token %}
+        {% include "includes/field.html" with field=letter_form.letter_body %}
+        <div class="form-row">{% include "includes/field.html" with field=letter_form.signatory_name %}{% include "includes/field.html" with field=letter_form.signatory_title %}</div>
+        <input type="hidden" name="template" value="{{ req.template_id|default:'' }}">
+        <div class="form-actions"><button class="btn btn-outline" type="submit" name="save">Save draft</button>
+          {% if req.status != 'issued' %}<button class="btn btn-ok" type="submit" name="issue" data-confirm="Issue this letter to the applicant?">Issue letter</button>{% else %}<a class="btn btn-ghost" href="{% url 'endorsements:letter' req.reference %}">View issued letter</a>{% endif %}</div>
+      </form></div>
+    {% endif %}
+  </div>
+  <aside class="stack">
+    {% if req.status != 'issued' and req.status != 'rejected' and req.status != 'withdrawn' %}
+    <form class="card" method="post" action="{% url 'endorsements:manage_action' req.reference %}" novalidate>{% csrf_token %}<h3>Action</h3>
+      {% include "includes/form.html" with form=action_form %}<button class="btn btn-accent btn-sm" type="submit">Apply</button></form>
+    {% endif %}
+    <div class="card"><h3>History</h3><ul class="timeline">{% for h in history %}<li><strong>{{ h.to_label|default:"Note" }}</strong><div class="when">{{ h.actor.get_full_name|default:h.actor.email }} · {{ h.created_at|date:"j M Y H:i" }}</div>{% if h.note %}<div class="note">{{ h.note }}</div>{% endif %}</li>{% endfor %}</ul></div>
+  </aside>
+</div>
+{% endblock %}

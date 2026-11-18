@@ -1,0 +1,9 @@
+<details class="az-details" open>
+  <summary>Menu A to Z ({{ account_menu|length }})</summary>
+  <nav aria-label="My menu">
+    <p class="menu-title">Menu A to Z</p>
+    <ol class="az-menu">
+      {% for label, url in account_menu %}<li><a href="{{ url }}" class="{% if request.path == url %}active{% endif %}">{{ label }}</a></li>{% endfor %}
+    </ol>
+  </nav>
+</details>

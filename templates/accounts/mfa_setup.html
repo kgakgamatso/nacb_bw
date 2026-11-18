@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Two-step verification{% endblock %}
+{% block content %}
+<section class="section"><div class="container" style="max-width:640px">
+  <div class="card">
+  <h1>Two-step verification</h1>
+  {% if enabled %}
+    <p class="notice notice-ok">Two-step verification is <strong>on</strong> for your account.</p>
+    <form method="post" action="{% url 'accounts:mfa_disable' %}" class="mt-2">{% csrf_token %}
+      <div class="field"><label for="code">To turn it off, enter a current code</label><input id="code" name="code" inputmode="numeric" autocomplete="one-time-code"></div>
+      <button class="btn btn-danger" type="submit">Turn off two-step verification</button>
+    </form>
+  {% else %}
+    <p>Protect your account with a code from an authenticator app (Google Authenticator, Microsoft Authenticator, Authy…) in addition to your password.</p>
+    <ol>
+      <li>Open your authenticator app and choose <em>Add account → Enter a setup key</em>.</li>
+      <li>Account name: <strong>{{ user.email }}</strong>. Key: <code style="font-size:1.1rem;letter-spacing:.05em">{{ secret }}</code> (time-based).</li>
+      <li>Enter the 6-digit code the app shows.</li>
+    </ol>
+    <p class="small muted">Setup link for apps that accept it: <code style="overflow-wrap:anywhere">{{ uri }}</code></p>
+    <form method="post" novalidate>{% csrf_token %}
+      {% include "includes/form.html" %}
+      <div class="form-actions"><button class="btn btn-primary" type="submit">Turn on</button><a href="{% url 'accounts:settings' %}">Cancel</a></div>
+    </form>
+  {% endif %}
+  </div>
+</div></section>
+{% endblock %}

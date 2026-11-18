@@ -1,0 +1,44 @@
+{% extends "backoffice/base.html" %}{% load nacb humanize %}
+{% block title %}Staff dashboard{% endblock %}
+{% block staff %}
+<div class="flex between"><h1 class="mb-0">Dashboard</h1>
+  <form class="flex" method="get">
+    <label class="sr-only" for="d">District</label><select id="d" name="district" style="width:auto"><option value="">All districts</option>{% for k, v in districts %}<option value="{{ k }}" {% if f.district == k %}selected{% endif %}>{{ v }}</option>{% endfor %}</select>
+    <label class="sr-only" for="disc">Discipline</label><select id="disc" name="discipline" style="width:auto"><option value="">All disciplines</option>{% for d in disciplines %}<option value="{{ d.slug }}" {% if f.discipline == d.slug %}selected{% endif %}>{{ d.name }}</option>{% endfor %}</select>
+    <button class="btn btn-outline btn-sm" type="submit">Apply</button></form></div>
+
+<h2 class="mt-2">Work waiting</h2>
+<div class="tiles">
+  <a class="tile attn" href="{% url 'backoffice:registry' %}?status=pending"><div class="num">{{ tasks.registrations }}</div><div class="lbl">Registrations to verify</div></a>
+  <a class="tile" href="{% url 'grants:manage_list' %}?status=submitted"><div class="num">{{ tasks.grants_new }}</div><div class="lbl">New grant applications</div></a>
+  <a class="tile" href="{% url 'grants:manage_list' %}?mine=1"><div class="num">{{ tasks.grants_mine }}</div><div class="lbl">Assigned to me</div></a>
+  {% if tasks.grants_recommended is not None %}<a class="tile attn" href="{% url 'grants:manage_list' %}?status=recommended"><div class="num">{{ tasks.grants_recommended }}</div><div class="lbl">Awaiting my approval</div></a>{% endif %}
+  <a class="tile" href="{% url 'endorsements:manage_list' %}"><div class="num">{{ tasks.endorsements }}</div><div class="lbl">Open endorsement requests</div></a>
+  <a class="tile {% if tasks.endorsements_overdue %}urgent{% endif %}" href="{% url 'endorsements:manage_list' %}"><div class="num">{{ tasks.endorsements_overdue }}</div><div class="lbl">Endorsements overdue (10-day target)</div></a>
+  <a class="tile" href="{% url 'backoffice:messages' %}"><div class="num">{{ tasks.messages }}</div><div class="lbl">Unresolved enquiries</div></a>
+</div>
+
+<h2>Figures</h2>
+<div class="tiles">
+  <div class="tile"><div class="num">{{ stats.verified|intcomma }}</div><div class="lbl">Verified creatives (of {{ stats.total|intcomma }} accounts)</div></div>
+  <div class="tile"><div class="num">{{ stats.new_30 }}</div><div class="lbl">New registrations, last 30 days</div></div>
+  <div class="tile"><div class="num">{{ stats.apps_total }}</div><div class="lbl">Grant applications received</div></div>
+  <div class="tile"><div class="num">{{ stats.approved }}</div><div class="lbl">Grants approved</div></div>
+  <div class="tile"><div class="num" style="font-size:1.35rem">{{ stats.awarded|money }}</div><div class="lbl">Awarded of {{ stats.requested|money }} requested</div></div>
+</div>
+
+<div class="grid grid-2">
+  <div class="card"><h3>Registrations by district</h3>
+    <ul class="bars">{% for label, c in by_district %}<li><span>{{ label }}</span><span class="track"><span class="fill" style="width:{{ c|pct:max_d }}%"></span></span><span class="val">{{ c }}</span></li>{% empty %}<li class="muted">No data</li>{% endfor %}</ul></div>
+  <div class="card"><h3>Top disciplines</h3>
+    <ul class="bars">{% for label, c in by_discipline %}<li><span>{{ label }}</span><span class="track"><span class="fill" style="width:{{ c|pct:max_disc }}%"></span></span><span class="val">{{ c }}</span></li>{% empty %}<li class="muted">No data</li>{% endfor %}</ul></div>
+  <div class="card"><h3>Oldest pending registrations</h3>
+    {% for p in pending_regs %}<div class="flex between" style="padding:.4rem 0;border-bottom:1px solid var(--line)"><a href="{% url 'backoffice:registry_detail' p.pk %}">{{ p.display_name }}</a><span class="small muted">{{ p.get_district_display }} · {{ p.submitted_at|timesince }} ago</span></div>{% empty %}<p class="muted">Nothing pending. 🎉</p>{% endfor %}</div>
+  <div class="card"><h3>Endorsements by due date</h3>
+    {% for r in urgent_ends %}<div class="flex between" style="padding:.4rem 0;border-bottom:1px solid var(--line)"><a href="{% url 'endorsements:manage_detail' r.reference %}">{{ r.reference }} to {{ r.profile.display_name }}</a>{% if r.is_overdue %}<span class="badge badge-bad">Overdue</span>{% else %}<span class="small muted">due {{ r.due_date|date:"j M" }}</span>{% endif %}</div>{% empty %}<p class="muted">No open requests.</p>{% endfor %}</div>
+  <div class="card"><h3>My grant queue</h3>
+    {% for a in my_grants %}<div class="flex between" style="padding:.4rem 0;border-bottom:1px solid var(--line)"><a href="{% url 'grants:manage_detail' a.reference %}">{{ a.reference }} to {{ a.project_title|truncatechars:40 }}</a>{% badge a.status a.get_status_display %}</div>{% empty %}<p class="muted">Nothing assigned to you.</p>{% endfor %}</div>
+  <div class="card"><h3>Active grant calls</h3>
+    {% for c in calls %}<div class="flex between" style="padding:.4rem 0;border-bottom:1px solid var(--line)"><span>{{ c.title }}<div class="small muted">{{ c.phase }} · closes {{ c.closes_at|date:"j M Y" }}</div></span><strong>{{ c.n }}</strong></div>{% empty %}<p class="muted">No published calls.</p>{% endfor %}</div>
+</div>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends "base.html" %}{% load nacb %}
+{% block title %}{{ app.reference }}{% endblock %}
+{% block content %}
+<header class="page-head"><div class="container"><div class="crumbs"><a href="{% url 'grants:my_applications' %}">My applications</a></div>
+  <h1>{{ app.project_title|default:"Untitled project" }}</h1><p>{{ app.reference }} · {{ app.call.title }}</p></div></header>
+<section class="section"><div class="container layout-side">
+  <div class="stack">
+    <div class="card">
+      <div class="flex between"><h2 class="mb-0">Status</h2>{% badge app.status app.get_status_display %}</div>
+      {% if app.status == 'info_required' %}
+        <div class="notice notice-warn mt-2"><strong>NACB needs more information:</strong><br>{{ app.info_request|linebreaksbr }}</div>
+        <form method="post" class="mt-2" novalidate>{% csrf_token %}{% include "includes/form.html" %}
+          <div class="flex"><button class="btn btn-primary" type="submit">Send response &amp; continue</button><a class="btn btn-outline" href="{% url 'grants:step' app.reference 1 %}">Edit application</a></div></form>
+      {% elif app.status == 'approved' %}
+        <div class="notice notice-ok mt-2"><strong>Congratulations!</strong> Amount awarded: <strong>{{ app.amount_awarded|money }}</strong>.{% if app.decision_note %}<br>{{ app.decision_note|linebreaksbr }}{% endif %}<br><a class="btn btn-primary btn-sm mt-1" href="{% url 'grants:my_grant' app.reference %}">Go to grant reporting</a></div>
+      {% elif app.status == 'rejected' %}
+        <div class="notice notice-bad mt-2">{{ app.decision_note|default:"Unfortunately your application was not successful in this round."|linebreaksbr }}</div>
+      {% elif app.status == 'draft' %}
+        <p class="mt-2">This application has not been submitted. <a class="btn btn-primary btn-sm" href="{% url 'grants:step' app.reference 1 %}">Continue application</a></p>
+      {% else %}<p class="mt-2 mb-0 muted">Submitted {{ app.submitted_at|date:"j F Y, H:i" }}. You'll be notified by email{% if user.sms_opt_in %} and SMS{% endif %} when the status changes.</p>{% endif %}
+    </div>
+    <div class="card"><h2>Progress</h2>
+      <ul class="timeline">{% for h in history %}<li><div><strong>{{ h.to_label|default:"Message" }}</strong> <span class="when">· {{ h.created_at|date:"j M Y H:i" }}{% if h.actor and h.actor != user %} · NACB{% endif %}</span></div>{% if h.note %}<div class="note">{{ h.note }}</div>{% endif %}</li>
+      {% empty %}<li>Draft created {{ app.created_at|date:"j M Y" }}</li>{% endfor %}</ul>
+    </div>
+    <div class="card"><h2>Application summary</h2>
+      <dl class="dl">
+        <dt>Art form</dt><dd>{{ app.category|default:"None" }}</dd><dt>Location</dt><dd>{{ app.get_district_display|default:"None" }}</dd>
+        <dt>Dates</dt><dd>{{ app.start_date|date:"j M Y" }} to {{ app.end_date|date:"j M Y" }}</dd>
+        <dt>Summary</dt><dd>{{ app.summary }}</dd>
+        <dt>Requested</dt><dd>{{ app.amount_requested|money }}</dd><dt>Total cost</dt><dd>{{ app.total_project_cost|money }}</dd>
+        <dt>Documents</dt><dd>{% for d in app.documents.all %}<a href="{% url 'grants:document' d.pk %}">{{ d.doc_type.name }}</a>{% if not forloop.last %}, {% endif %}{% empty %}None{% endfor %}</dd>
+      </dl>
+    </div>
+  </div>
+  <aside class="stack">
+    <div class="card small"><h3>Reference</h3><p class="kpi mb-0">{{ app.reference }}</p><p class="muted">Quote this reference when contacting NACB.</p></div>
+    {% if app.status == 'submitted' or app.status == 'under_review' or app.status == 'info_required' %}
+    <form class="card small" method="post" action="{% url 'grants:withdraw' app.reference %}">{% csrf_token %}<h3>Withdraw</h3><p>Changed your plans? You can withdraw this application.</p><button class="btn btn-danger btn-sm" type="submit" data-confirm="Withdraw this application? This cannot be undone.">Withdraw application</button></form>
+    {% endif %}
+  </aside>
+</div></section>
+{% endblock %}

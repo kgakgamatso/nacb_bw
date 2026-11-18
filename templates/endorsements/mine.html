@@ -1,0 +1,14 @@
+{% extends "base.html" %}{% load nacb %}
+{% block title %}My endorsement requests{% endblock %}
+{% block content %}
+<header class="page-head"><div class="container"><div class="crumbs"><a href="{% url 'portal:dashboard' %}">Dashboard</a></div><h1>My endorsement requests</h1></div></header>
+<section class="section"><div class="container">
+  <p><a class="btn btn-primary" href="{% url 'endorsements:create' %}">New request</a></p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Reference</th><th>Purpose</th><th>Event / opportunity</th><th>Status</th><th>Expected by</th><th></th></tr></thead>
+    <tbody>{% for r in reqs %}<tr><td>{{ r.reference }}</td><td>{{ r.get_purpose_display }}</td><td>{{ r.event_name }}</td><td>{% badge r.status r.get_status_display %}</td><td>{{ r.due_date|date:"j M Y" }}</td>
+      <td>{% if r.status == 'issued' %}<a class="btn btn-ok btn-sm" href="{% url 'endorsements:letter' r.reference %}">View letter</a>{% else %}<a class="btn btn-outline btn-sm" href="{{ r.get_absolute_url }}">View</a>{% endif %}</td></tr>
+    {% empty %}<tr><td colspan="6" class="empty">No requests yet.</td></tr>{% endfor %}</tbody>
+  </table></div>
+</div></section>
+{% endblock %}

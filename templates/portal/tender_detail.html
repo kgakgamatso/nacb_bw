@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}{{ t.reference }}{% endblock %}
+{% block content %}
+<header class="page-head"><div class="container"><div class="crumbs"><a href="{% url 'portal:tenders' %}">Tenders</a></div><h1>{{ t.title }}</h1><p>{{ t.reference }} · {{ t.get_category_display }}</p></div></header>
+<section class="section"><div class="container layout-side">
+  <article class="card prose" style="max-width:none">
+    {% if t.award_notice %}<div class="notice notice-ok mb-2"><strong>Award notice</strong><br>{{ t.award_notice|linebreaksbr }}</div>
+    {% elif not t.is_open %}<p class="notice notice-warn">This tender closed on {{ t.closing_date|date:"j F Y" }} and is being evaluated.</p>{% endif %}
+    <p>{{ t.summary }}</p>
+    {{ t.description|safe }}
+    {% if t.eligibility %}<h2>Eligibility and requirements</h2>{{ t.eligibility|safe }}{% endif %}
+    <h2>Submission</h2>{{ t.submission|linebreaks }}
+  </article>
+  <aside class="card">
+    <dl class="dl" style="grid-template-columns:1fr">
+      <dt>Closing date</dt><dd><strong>{{ t.closing_date|date:"j F Y, H:i" }}</strong></dd>
+      {% if t.briefing %}<dt>Briefing</dt><dd>{{ t.briefing }}</dd>{% endif %}
+      <dt>Enquiries</dt><dd>{{ t.contact }}</dd>
+    </dl>
+    {% if t.document %}<a class="btn btn-primary mt-2" href="{{ t.document.url }}">Download tender document</a>{% endif %}
+  </aside>
+</div></section>
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends "base.html" %}{% load static nacb %}
+{% block title %}{{ T.news }}{% endblock %}
+{% block content %}
+<header class="page-head"><div class="container"><h1>{{ T.news }}</h1><p>News, press releases, opportunities and stories from Botswana's creative sector.</p></div></header>
+<section class="section"><div class="container">
+  <ul class="pill-list mb-3" aria-label="Filter by category">
+    <li><a href="?" class="{% if not cat %}active{% endif %}">All</a></li>
+    {% for k, label in categories %}<li><a href="?category={{ k }}" class="{% if cat == k %}active{% endif %}">{{ label }}</a></li>{% endfor %}
+  </ul>
+  <div class="news-list">
+    {% for n in page %}
+    <a class="news-item{% if n.image %} has-image{% endif %}" href="{{ n.get_absolute_url }}">
+      {% if n.image %}<img src="{{ n.image.url }}" alt="">{% endif %}
+      <div><p class="news-meta">{{ n.get_category_display }} · {{ n.publish_at|date:"j F Y" }}</p><h3>{{ n.title }}</h3><p class="news-summary">{{ n.summary }}</p></div>
+    </a>
+    {% empty %}<p class="empty">No articles in this category yet.</p>{% endfor %}
+  </div>
+  {% include "includes/pagination.html" %}
+  {% if albums %}
+  <div class="section-head mt-4"><h2>Photo galleries</h2><a href="{% url 'portal:gallery' %}">All galleries →</a></div>
+  <div class="grid grid-4">{% for a in albums %}
+    <a class="card card-link" href="{{ a.get_absolute_url }}">{% if a.cover %}<img class="card-img" src="{{ a.cover.image.url }}" alt="">{% endif %}<div class="card-body"><strong>{{ a.title }}</strong></div></a>
+  {% endfor %}</div>{% endif %}
+</div></section>
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends "base.html" %}{% load nacb %}
+{% block title %}{{ T.grants }}{% endblock %}
+{% block content %}
+<header class="page-head"><div class="container"><h1>Grants &amp; funding</h1><p>NACB funds projects that develop Botswana's arts and grow creative businesses. Apply online, save your progress and track your application from submission to decision.</p></div></header>
+<section class="section"><div class="container">
+  <div class="section-head"><h2>Open for applications</h2></div>
+  <div class="grid grid-2">
+    {% for c in open_calls %}
+    <article class="card">
+      <div class="flex between">{% badge "Open" "Open" %}<span class="small"><strong>{{ c.days_left }}</strong> day{{ c.days_left|pluralize }} left</span></div>
+      <h3 class="mt-1"><a href="{{ c.get_absolute_url }}">{{ c.title }}</a></h3>
+      <p class="muted">{{ c.summary }}</p>
+      <dl class="dl small"><dt>Funding</dt><dd>{{ c.min_amount|money }} to {{ c.max_amount|money }}</dd><dt>Closes</dt><dd>{{ c.closes_at|date:"l j F Y, H:i" }}</dd><dt>Who can apply</dt><dd>{{ c.get_applicant_types_display }}</dd></dl>
+      <a class="btn btn-primary mt-2" href="{{ c.get_absolute_url }}">Details &amp; apply</a>
+    </article>
+    {% empty %}<p class="empty">There are no open calls right now. Subscribe to the newsletter to hear when the next call opens.</p>{% endfor %}
+  </div>
+  {% if upcoming %}<h2 class="mt-4">Opening soon</h2>
+  <div class="grid grid-3">{% for c in upcoming %}<a class="card card-link" href="{{ c.get_absolute_url }}"><div class="card-body">{% badge "Opening soon" "Opening soon" %}<h3 class="mt-1">{{ c.title }}</h3><p class="small muted mb-0">Opens {{ c.opens_at|date:"j F Y" }}</p></div></a>{% endfor %}</div>{% endif %}
+  {% if closed %}<h2 class="mt-4">Past calls</h2>
+  <div class="table-wrap"><table><thead><tr><th>Call</th><th>Reference</th><th>Closed</th></tr></thead><tbody>
+    {% for c in closed %}<tr><td><a href="{{ c.get_absolute_url }}">{{ c.title }}</a></td><td>{{ c.reference }}</td><td>{{ c.closes_at|date:"j M Y" }}</td></tr>{% endfor %}
+  </tbody></table></div>{% endif %}
+  <div class="steps mt-4">
+    <div class="step"><h3>Get verified</h3><p class="small muted mb-0">Most calls require a verified National Artist Register profile.</p></div>
+    <div class="step"><h3>Prepare documents</h3><p class="small muted mb-0">Certified ID, CV/profile, bank confirmation letter, quotations and references.</p></div>
+    <div class="step"><h3>Apply online</h3><p class="small muted mb-0">Five short steps. Save and continue later at any time.</p></div>
+    <div class="step"><h3>Track &amp; respond</h3><p class="small muted mb-0">Follow your status and respond quickly if NACB requests more information.</p></div>
+  </div>
+</div></section>
+{% endblock %}

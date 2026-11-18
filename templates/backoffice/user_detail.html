@@ -1,0 +1,42 @@
+{% extends "backoffice/base.html" %}{% load nacb %}
+{% block title %}{{ u.email }}{% endblock %}
+{% block staff %}
+<p class="small"><a href="{% url 'backoffice:user_list' %}">User management</a></p>
+<div class="flex between"><div><h1 class="mb-0">{{ u.display_name }}</h1><p class="muted">{{ u.email }} · {{ u.get_role_display }} · joined {{ u.date_joined|date:"j M Y" }}</p></div>
+  <div class="flex">{% if u.is_active %}<span class="badge badge-ok">Active</span>{% else %}<span class="badge badge-bad">Deactivated</span>{% endif %}{% if locked %}<span class="badge badge-warn">Locked out</span>{% endif %}</div></div>
+<div class="layout-side wide-aside">
+  <div class="stack">
+    <form class="card" method="post" novalidate>{% csrf_token %}
+      <h2>Details and role</h2>
+      {% include "includes/form.html" %}
+      <div class="form-actions"><button class="btn btn-primary" type="submit">Save</button>
+        {% if u.profile %}<a class="btn btn-ghost" href="{% url 'backoffice:registry_detail' u.profile.pk %}">Register record</a>{% endif %}</div>
+    </form>
+    <div class="card"><h2>Recent activity</h2>
+      <div class="table-wrap"><table><tbody>{% for a in activity %}<tr><td class="nowrap small">{{ a.created_at|date:"j M Y H:i" }}</td><td><code>{{ a.action }}</code></td><td class="small">{{ a.object_repr|nodash|truncatechars:50 }}</td><td class="small muted">{{ a.ip_address|default:"" }}</td></tr>{% empty %}<tr><td class="muted">No activity.</td></tr>{% endfor %}</tbody></table></div>
+    </div>
+  </div>
+  <div class="stack">
+    <form class="card" method="post" action="{% url 'backoffice:user_action' u.pk %}">{% csrf_token %}
+      <h2>Account actions</h2>
+      <div class="stack">
+        <button class="btn btn-outline" name="action" value="reset_password" type="submit">Email a password reset link</button>
+        {% if u.mfa_enabled %}<button class="btn btn-outline" name="action" value="reset_mfa" type="submit" data-confirm="Reset two-step verification for this user?">Reset two-step verification</button>{% endif %}
+        {% if locked %}<button class="btn btn-outline" name="action" value="unlock" type="submit">Clear sign-in lockout</button>{% endif %}
+        {% if not u.email_verified %}<button class="btn btn-outline" name="action" value="verify_email" type="submit">Mark email as verified</button>{% endif %}
+        {% if u != user %}
+          <button class="btn btn-outline" name="action" value="signout" type="submit">Sign out of all devices</button>
+          {% if u.is_active %}<button class="btn btn-danger" name="action" value="deactivate" type="submit" data-confirm="Deactivate this account? The user will be signed out and unable to sign in.">Deactivate account</button>
+          {% else %}<button class="btn btn-ok" name="action" value="activate" type="submit">Reactivate account</button>{% endif %}
+        {% endif %}
+      </div>
+      <p class="small muted mt-2 mb-0">Accounts are deactivated rather than deleted so that applications, decisions and the audit trail stay intact.</p>
+    </form>
+    <div class="card"><h2>Sign-ins</h2>
+      <ul class="list-plain small">{% for a in logins %}<li>{{ a.created_at|date:"j M Y H:i" }} · {% if a.action == 'auth.login' %}signed in{% else %}signed out{% endif %} · {{ a.ip_address|default:"" }}</li>{% empty %}<li class="muted">No sign-ins recorded.</li>{% endfor %}</ul>
+      {% if failed %}<h3 class="mt-2">Failed attempts</h3><ul class="list-plain small">{% for a in failed %}<li>{{ a.created_at|date:"j M Y H:i" }} · {{ a.ip_address|default:"" }}</li>{% endfor %}</ul>{% endif %}
+      <p class="small muted mb-0">Two-step verification: {% if u.mfa_enabled %}on{% else %}off{% endif %}</p>
+    </div>
+  </div>
+</div>
+{% endblock %}

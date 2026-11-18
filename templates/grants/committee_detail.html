@@ -1,0 +1,54 @@
+{% extends "backoffice/base.html" %}{% load nacb %}
+{% block title %}{{ s.title }}{% endblock %}
+{% block staff %}
+<p class="small"><a href="{% url 'grants:committee_list' %}">Committee sittings</a></p>
+<div class="flex between"><div><h1 class="mb-0">{{ s.title }}</h1>
+  <p class="muted">{{ s.call.title }} · closed {{ s.call.closes_at|date:"j M Y" }} · sitting {{ s.meeting_date|date:"j M Y H:i" }}{% if s.venue %}, {{ s.venue }}{% endif %}</p></div>
+  {% badge s.status s.get_status_display %}</div>
+
+<div class="tiles">
+  <div class="tile"><div class="num">{{ totals.applications }}</div><div class="lbl">applications</div></div>
+  <div class="tile"><div class="num">{{ totals.decided }}</div><div class="lbl">decided</div></div>
+  <div class="tile"><div class="num">{{ totals.approved }}</div><div class="lbl">to be funded</div></div>
+  <div class="tile {% if s.budget_available and totals.amount > s.budget_available %}urgent{% endif %}"><div class="num" style="font-size:1.25rem">{{ totals.amount|money }}</div><div class="lbl">approved{% if s.budget_available %} of {{ s.budget_available|money }} available{% endif %}</div></div>
+</div>
+
+<div class="flex mb-2">
+  {% if s.status == 'scheduled' and manage %}
+    {% if s.call_closed %}<form method="post" action="{% url 'grants:committee_start' s.pk %}">{% csrf_token %}<button class="btn btn-primary btn-sm" type="submit">Start assessment</button></form>
+    {% else %}<span class="notice notice-warn small">Assessment opens after the call closes on {{ s.call.closes_at|date:"j M Y H:i" }}.</span>{% endif %}
+  {% endif %}
+  <a class="btn btn-outline btn-sm" href="{% url 'grants:committee_report' s.pk %}">Summary report</a>
+  {% if s.status == 'concluded' and manage %}<form method="post" action="{% url 'grants:committee_publish' s.pk %}">{% csrf_token %}<button class="btn btn-accent btn-sm" type="submit" data-confirm="Publish the results? Every applicant will be notified by email and SMS.">Publish results and notify applicants</button></form>{% endif %}
+</div>
+
+<p class="small muted">Members: {{ s.chair.get_full_name }} (chair){% for m in members %}{% if m != s.chair %}, {{ m.get_full_name|default:m.email }}{% endif %}{% endfor %}</p>
+
+<form method="post" action="{% url 'grants:committee_decisions' s.pk %}" novalidate>{% csrf_token %}
+<div class="table-wrap"><table>
+  <thead><tr><th>Application</th><th class="num">Requested</th><th>Scores</th><th>My score</th>{% if manage %}<th>Decision</th><th>Amount (P)</th><th>Rank</th><th>Conditions / reason</th>{% else %}<th>Decision</th>{% endif %}</tr></thead>
+  <tbody>{% for r in rows %}<tr>
+    <td><strong>{{ r.d.application.reference }}</strong><div>{{ r.d.application.project_title|truncatechars:45 }}</div><div class="small muted">{{ r.d.application.profile.display_name }} · {{ r.d.application.profile.get_district_display }}</div></td>
+    <td class="num">{{ r.d.application.amount_requested|money }}</td>
+    <td class="nowrap">{% if r.score.avg is not None %}<strong>{{ r.score.avg }}%</strong>{% else %}None{% endif %}<div class="small muted">{{ r.score.count|default:0 }} assessor{{ r.score.count|pluralize }}</div></td>
+    <td class="nowrap">{% if r.mine %}{{ r.mine.percentage }}%{% endif %}{% if s.status == 'in_progress' %} <a class="small" href="{% url 'grants:committee_assess' s.pk r.d.application.reference %}">{% if r.mine %}change{% else %}score{% endif %}</a>{% endif %}</td>
+    {% if manage %}
+      {% if editable %}
+      <td>{{ r.form.decision }}{{ r.form.decision.errors }}</td><td style="min-width:120px">{{ r.form.amount }}</td><td style="width:80px">{{ r.form.rank }}</td><td style="min-width:200px">{{ r.form.conditions }}{{ r.form.reason }}</td>
+      {% else %}<td>{{ r.d.get_decision_display }}</td><td>{{ r.d.amount|money }}</td><td>{{ r.d.rank|default:"" }}</td><td class="small">{{ r.d.conditions }}{{ r.d.reason }}</td>{% endif %}
+    {% else %}<td>{{ r.d.get_decision_display }}</td>{% endif %}
+  </tr>{% empty %}<tr><td colspan="8" class="muted">No submitted applications for this call.</td></tr>{% endfor %}</tbody>
+</table></div>
+{% if manage and editable and rows %}<p class="small muted mt-1">The first box under Conditions / reason is the conditions of award (for funded projects); the second is the reason sent to applicants who are not funded or deferred.</p>
+<div class="form-actions"><button class="btn btn-primary" type="submit">Save decisions</button></div>{% endif %}
+</form>
+
+{% if manage %}
+<form class="card mt-3" method="post" action="{% url 'grants:committee_conclude' s.pk %}">{% csrf_token %}
+  <h2>Minutes</h2>
+  {% include "includes/form.html" with form=minutes_form %}
+  <div class="form-actions"><button class="btn btn-outline" type="submit" name="save">Save minutes</button>
+    {% if editable %}<button class="btn btn-primary" type="submit" name="conclude" data-confirm="Conclude the sitting? Decisions will be locked.">Conclude sitting</button>{% endif %}</div>
+</form>
+{% endif %}
+{% endblock %}

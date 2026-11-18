@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}{{ T.faqs }}{% endblock %}
+{% block content %}
+<header class="page-head"><div class="container"><h1>Frequently asked questions</h1><p>Can't find your answer? <a href="{% url 'portal:contact' %}" style="color:#fff">Contact us</a>.</p></div></header>
+<section class="section"><div class="container prose" style="max-width:860px">
+  {% for group, items in grouped.items %}
+    <h2>{{ group }}</h2>
+    {% for f in items %}<details class="faq" id="faq-{{ f.pk }}"><summary>{{ f.question }}</summary><div class="answer">{{ f.answer|linebreaks }}</div></details>{% endfor %}
+  {% empty %}<p class="empty">No FAQs published yet.</p>{% endfor %}
+</div></section>
+{% endblock %}

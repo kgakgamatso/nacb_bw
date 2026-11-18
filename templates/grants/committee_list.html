@@ -1,0 +1,15 @@
+{% extends "backoffice/base.html" %}{% load nacb %}
+{% block title %}Committee sittings{% endblock %}
+{% block staff %}
+<div class="flex between"><h1>Committee sittings</h1>{% if user.role != 'committee' %}<a class="btn btn-primary btn-sm" href="{% url 'grants:committee_create' %}">Schedule a sitting</a>{% endif %}</div>
+<p class="muted">After a call closes, the assessment committee scores every application, records a decision for each one, approves the summary report and publishes the results. Applicants are then told the outcome.</p>
+{% if awaiting and user.role != 'committee' %}
+<div class="notice notice-warn mb-2"><strong>Closed calls without a sitting:</strong>
+  {% for c in awaiting %}<a href="{% url 'grants:committee_create' %}?call={{ c.pk }}">{{ c.title }}</a> ({{ c.applications.count }} applications){% if not forloop.last %}, {% endif %}{% endfor %}</div>
+{% endif %}
+<div class="table-wrap"><table>
+  <thead><tr><th>Sitting</th><th>Call</th><th>Date</th><th>Chair</th><th>Status</th></tr></thead>
+  <tbody>{% for s in sessions %}<tr><td><a href="{{ s.get_absolute_url }}"><strong>{{ s.title }}</strong></a></td><td>{{ s.call.reference }}</td><td class="nowrap">{{ s.meeting_date|date:"j M Y H:i" }}</td><td>{{ s.chair.get_full_name }}</td><td>{% badge s.status s.get_status_display %}</td></tr>
+  {% empty %}<tr><td colspan="5" class="muted">No sittings yet.</td></tr>{% endfor %}</tbody>
+</table></div>
+{% endblock %}

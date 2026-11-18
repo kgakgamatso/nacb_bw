@@ -1,0 +1,17 @@
+{% extends "backoffice/base.html" %}{% load nacb %}
+{% block title %}Grant monitoring{% endblock %}
+{% block staff %}
+<h1>Grant monitoring</h1>
+<p class="muted">Funded projects, their reporting and health. {{ pending_reports }} report{{ pending_reports|pluralize }} waiting for review.</p>
+<ul class="pill-list mb-2"><li><a href="?" class="{% if not f.health and not f.overdue %}active{% endif %}">All</a></li><li><a href="?overdue=1" class="{% if f.overdue %}active{% endif %}">Overdue reports</a></li>{% for k, v in health %}<li><a href="?health={{ k }}" class="{% if f.health == k %}active{% endif %}">{{ v }}</a></li>{% endfor %}</ul>
+<div class="table-wrap"><table>
+  <thead><tr><th>Grant</th><th>Grantee</th><th class="num">Award</th><th class="num">Disbursed</th><th class="num">Reports</th><th class="num">Progress</th><th>Next report</th><th>Status</th></tr></thead>
+  <tbody>{% for ag in ags %}<tr>
+    <td><a href="{% url 'grants:monitor_detail' ag.application.reference %}"><strong>{{ ag.application.reference }}</strong></a><div class="small">{{ ag.application.project_title|truncatechars:40 }}</div></td>
+    <td>{{ ag.application.profile.display_name }}</td><td class="num">{{ ag.amount|money }}</td><td class="num">{{ ag.disbursed_amount|money }}</td>
+    <td class="num">{{ ag.n_reports }}</td><td class="num">{% if ag.avg_pct is not None %}{{ ag.avg_pct|floatformat:0 }}%{% else %}None{% endif %}</td>
+    <td class="nowrap">{{ ag.next_report_due|date:"j M Y" }}{% if ag.is_overdue %} <span class="badge badge-bad">overdue</span>{% endif %}</td>
+    <td>{% badge ag.health ag.get_health_display %}</td></tr>
+  {% empty %}<tr><td colspan="8" class="muted">No funded projects yet. Agreements are created when committee results are published.</td></tr>{% endfor %}</tbody>
+</table></div>
+{% endblock %}

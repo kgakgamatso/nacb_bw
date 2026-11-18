@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Verify an NACB letter{% endblock %}
+{% block content %}
+<header class="page-head"><div class="container"><h1>Verify an NACB letter</h1><p>Confirm that an endorsement letter was genuinely issued by the National Arts Council of Botswana.</p></div></header>
+<section class="section"><div class="container" style="max-width:640px">
+  <form class="card" method="get">
+    <div class="form-row"><div class="field"><label for="ref">Letter reference</label><input id="ref" name="ref" value="{{ ref }}" placeholder="EN-2026-00001" required></div>
+    <div class="field"><label for="code">Verification code</label><input id="code" name="code" value="{{ code }}" placeholder="8 characters" required></div></div>
+    <button class="btn btn-primary" type="submit">Verify</button>
+  </form>
+  {% if result %}<div class="notice notice-ok mt-2"><strong>✓ Genuine letter.</strong> Reference {{ result.reference }} was issued on {{ result.issued_at|date:"j F Y" }} to <strong>{{ result.profile.display_name }}</strong> ({{ result.profile.registration_number }}) for “{{ result.event_name }}”, addressed to {{ result.recipient_name }}.</div>
+  {% elif result is False %}<div class="notice notice-bad mt-2"><strong>✗ Not verified.</strong> No issued letter matches this reference and code. Please contact NACB on {{ SITE.phone }}.</div>{% endif %}
+</div></section>
+{% endblock %}

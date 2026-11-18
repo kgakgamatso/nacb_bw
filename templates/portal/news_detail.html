@@ -1,0 +1,28 @@
+{% extends "base.html" %}{% load nacb %}
+{% block title %}{{ post.title }}{% endblock %}
+{% block description %}{{ post.summary }}{% endblock %}
+{% block content %}
+<header class="page-head"><div class="container">
+  <div class="crumbs"><a href="{% url 'portal:news_list' %}">News</a> / {{ post.get_category_display }}</div>
+  <h1>{{ post.title }}</h1><p>{{ post.publish_at|date:"j F Y" }}{% if post.author %} · {{ post.author.get_full_name }}{% endif %}</p>
+</div></header>
+<section class="section"><div class="container layout-side">
+  <article class="card prose" style="max-width:none">
+    {% if post.image %}<img src="{{ post.image.url }}" alt="" class="mb-2">{% endif %}
+    <p><strong>{{ post.summary }}</strong></p>
+    {{ post.body|safe }}
+    {% if post.embed_url %}<div class="video"><iframe src="{{ post.embed_url }}" title="Video: {{ post.title }}" allowfullscreen loading="lazy"></iframe></div>{% endif %}
+    <div class="share mt-3"><strong class="small">Share:</strong>
+      <a class="btn btn-outline btn-sm" href="https://wa.me/?text={{ post.title|urlencode }}%20{{ share_url|urlencode }}" rel="noopener" target="_blank">WhatsApp</a>
+      <a class="btn btn-outline btn-sm" href="https://www.facebook.com/sharer/sharer.php?u={{ share_url|urlencode }}" rel="noopener" target="_blank">Facebook</a>
+      <a class="btn btn-outline btn-sm" href="https://x.com/intent/post?url={{ share_url|urlencode }}&amp;text={{ post.title|urlencode }}" rel="noopener" target="_blank">X</a>
+      <a class="btn btn-outline btn-sm" href="https://www.linkedin.com/sharing/share-offsite/?url={{ share_url|urlencode }}" rel="noopener" target="_blank">LinkedIn</a>
+    </div>
+  </article>
+  <aside class="stack">
+    {% if post.related_call %}<div class="card notice-ok"><h3>{{ post.related_call.title }}</h3>{% badge post.related_call.phase post.related_call.phase %}<p class="mt-1"><a class="btn btn-primary btn-sm" href="{{ post.related_call.get_absolute_url }}">View grant call</a></p></div>{% endif %}
+    {% if post.related_event %}<div class="card"><h3>{{ post.related_event.title }}</h3><p class="small muted">{{ post.related_event.starts_at|date:"j M Y" }} · {{ post.related_event.venue }}</p><a class="btn btn-outline btn-sm" href="{{ post.related_event.get_absolute_url }}">Event details</a></div>{% endif %}
+    {% if related %}<div class="card"><h3>More {{ post.get_category_display|lower }}</h3><ul style="padding-left:1rem;margin:0">{% for r in related %}<li class="mb-1"><a href="{{ r.get_absolute_url }}">{{ r.title }}</a></li>{% endfor %}</ul></div>{% endif %}
+  </aside>
+</div></section>
+{% endblock %}

@@ -1,0 +1,114 @@
+{% extends "base.html" %}{% load static nacb %}
+{% block title %}Partner with NACB{% endblock %}
+{% block description %}Sponsor an event, fund a CSR programme or partner with the National Arts Council of Botswana.{% endblock %}
+{% block content %}
+<header class="page-head"><div class="container">
+  <h1>Partner with NACB</h1>
+  <p>Put your brand behind Botswana's creative talent. Sponsor a festival, fund a community arts programme through your CSR budget, or build a long-term partnership with us.</p>
+</div></header>
+
+<section class="section">
+  <div class="container">
+    <h2>Ways to get involved</h2>
+    <div class="ways">
+      <a class="way" href="#sponsor"><span class="icon-badge">{% icon "stage" 28 %}</span><h3>Sponsor an event</h3><p>Reach audiences at festivals, competitions and exhibitions across all districts, with your brand on stage, in print and online.</p></a>
+      <a class="way" href="#csr"><span class="icon-badge">{% icon "csr" 28 %}</span><h3>Fund a CSR programme</h3><p>Support a ready-to-run programme with clear targets, reporting and impact figures for your annual report.</p></a>
+      <a class="way" href="#enquire"><span class="icon-badge">{% icon "handshake" 28 %}</span><h3>Long-term partnership</h3><p>Work with NACB over several years through a memorandum of understanding, a named award or a joint initiative.</p></a>
+      <a class="way" href="#enquire"><span class="icon-badge">{% icon "inkind" 28 %}</span><h3>In-kind support</h3><p>Venues, transport, equipment, airtime, printing or professional services count as support too.</p></a>
+    </div>
+    <div class="why mt-3">
+      <div>{% icon "eye" 22 %}<strong>Visibility</strong><span>Logo placement, stage mentions, media coverage and social posts.</span></div>
+      <div>{% icon "chart" 22 %}<strong>Measurable impact</strong><span>Agreed targets and a short impact report after each event or programme.</span></div>
+      <div>{% icon "shield" 22 %}<strong>Accountability</strong><span>Funds are ring-fenced and reported on, in line with public finance rules.</span></div>
+      <div>{% icon "reach" 22 %}<strong>Reach</strong><span>Creatives and audiences in every district, from Ghanzi to the North-East.</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="section section-alt" id="sponsor">
+  <div class="container">
+    <div class="section-head"><h2>Sponsor an upcoming event</h2><a href="{% url 'events:list' %}">All events</a></div>
+    {% for e in events %}
+    <article class="card sponsor-event mb-2">
+      {% if e.image %}<img class="event-thumb" src="{{ e.image.url }}" alt="">{% else %}<span class="date-chip date-chip-lg"><span class="d">{{ e.starts_at|date:"j" }}</span><span class="m">{{ e.starts_at|date:"M Y" }}</span></span>{% endif %}
+      <div>
+        <h3 class="mb-1"><a href="{{ e.get_absolute_url }}">{{ e.title }}</a></h3>
+        <p class="small muted">{{ e.starts_at|date:"j F Y" }} · {{ e.venue }}, {{ e.get_district_display }}{% if e.capacity %} · up to {{ e.capacity }} participants{% endif %}</p>
+        <div class="packages">
+          {% for pk in e.sponsorship_packages.all %}{% if pk.active %}
+          <div class="package{% if not pk.available %} taken{% endif %}">
+            <div class="flex between"><strong>{{ pk.get_level_display }}</strong><span>{% if pk.amount %}{{ pk.amount|money }}{% else %}In kind{% endif %}</span></div>
+            <ul>{% for b in pk.benefit_list %}<li>{{ b }}</li>{% endfor %}</ul>
+            {% if pk.available %}<a class="btn btn-primary btn-sm" href="?interest=event&amp;event={{ e.pk }}&amp;package={{ pk.pk }}#enquire">Sponsor at this level</a>{% else %}<span class="badge badge-muted">Taken</span>{% endif %}
+          </div>
+          {% endif %}{% endfor %}
+        </div>
+      </div>
+    </article>
+    {% empty %}<p class="empty">No events are open for sponsorship right now. Tell us what you would like to support below.</p>{% endfor %}
+    {% if general_packages %}
+    <h3 class="mt-3">Packages for any NACB event</h3>
+    <div class="packages">{% for pk in general_packages %}
+      <div class="package"><div class="flex between"><strong>{{ pk.get_level_display }}</strong><span>{% if pk.amount %}{{ pk.amount|money }}{% else %}In kind{% endif %}</span></div>
+        <ul>{% for b in pk.benefit_list %}<li>{{ b }}</li>{% endfor %}</ul>
+        <a class="btn btn-outline btn-sm" href="?interest={% if pk.level == 'inkind' %}inkind{% else %}event{% endif %}&amp;package={{ pk.pk }}#enquire">Ask about this</a></div>
+    {% endfor %}</div>
+    {% endif %}
+  </div>
+</section>
+
+<section class="section" id="csr">
+  <div class="container">
+    <div class="section-head"><h2>CSR programmes looking for funding</h2>
+      {% if totals.target %}<span class="small muted">{{ totals.raised|money }} secured of {{ totals.target|money }} needed</span>{% endif %}</div>
+    <div class="grid grid-3">
+      {% for p in programmes %}
+      <a class="card card-link" href="{{ p.get_absolute_url }}">
+        {% if p.image %}<img class="card-img" src="{{ p.image.url }}" alt="">{% endif %}
+        <div class="card-body">
+          <p class="small muted mb-1">{{ p.get_theme_display }}{% if p.district %} · {{ p.get_district_display }}{% else %} · National{% endif %}</p>
+          <h3>{{ p.title }}</h3>
+          <p class="small mb-2">{{ p.summary }}</p>
+          <div class="progress"><span style="width:{{ p.percent }}%"></span></div>
+          <p class="small mt-1 mb-0"><strong>{{ p.raised_amount|money }}</strong> of {{ p.target_amount|money }} ({{ p.percent }}%){% if p.beneficiaries %} · {{ p.beneficiaries }} people{% endif %}</p>
+        </div>
+      </a>
+      {% empty %}<p class="empty">No CSR programmes are listed at the moment.</p>{% endfor %}
+    </div>
+  </div>
+</section>
+
+{% if groups %}
+<section class="section section-alt">
+  <div class="container">
+    <h2>Our partners</h2>
+    {% for label, items in groups.items %}
+    <h3 class="mt-2">{{ label }}s</h3>
+    <div class="partner-logos">{% for p in items %}
+      {% if p.website %}<a class="partner-logo" href="{{ p.website }}" target="_blank" rel="noopener">{% else %}<span class="partner-logo">{% endif %}
+        {% if p.logo %}<img src="{{ p.logo.url }}" alt="{{ p.name }}">{% else %}<span class="partner-name">{{ p.name }}</span>{% endif %}
+      {% if p.website %}</a>{% else %}</span>{% endif %}
+    {% endfor %}</div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<section class="section" id="enquire">
+  <div class="container layout-side wide-aside">
+    <form class="card" method="post" novalidate>{% csrf_token %}
+      <h2>Talk to our partnerships team</h2>
+      <p class="muted">Tell us what you would like to support and we will send a proposal within 3 working days.</p>
+      {% include "includes/form.html" %}
+      <div class="form-actions"><button class="btn btn-primary" type="submit">Send enquiry</button></div>
+    </form>
+    <aside class="card">
+      <h3>Partnerships office</h3>
+      <p class="mb-1">partnerships@nacb.org.bw</p>
+      <p class="mb-1">{{ SITE.phone }}</p>
+      <p class="small muted">{{ SITE.address }}</p>
+      <p class="small mb-0">Every sponsorship and CSR contribution is covered by a written agreement and reported on publicly in the NACB annual report.</p>
+    </aside>
+  </div>
+</section>
+{% endblock %}

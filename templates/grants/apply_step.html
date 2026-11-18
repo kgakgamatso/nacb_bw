@@ -1,0 +1,99 @@
+{% extends "base.html" %}{% load nacb %}
+{% block title %}{{ app.reference }}, step {{ n }}{% endblock %}
+{% block content %}
+<header class="page-head"><div class="container"><div class="crumbs"><a href="{% url 'portal:dashboard' %}">Dashboard</a> / <a href="{{ call.get_absolute_url }}">{{ call.title }}</a></div>
+  <h1>Grant application {{ app.reference }}</h1><p>{% if app.status == 'info_required' %}NACB has requested more information. Update your application and resubmit.{% else %}Your progress is saved each time you click Save. Closes {{ call.closes_at|date:"j M Y, H:i" }}.{% endif %}</p></div></header>
+<section class="section-tight"><div class="container">
+  <nav aria-label="Application steps"><ol class="wizard">
+    {% for num, label in steps %}<li class="{% if num == n %}current{% elif completion|get_item:num %}done{% endif %}"><a href="{% url 'grants:step' app.reference num %}" {% if num == n %}aria-current="step"{% endif %}>{{ label }}</a></li>{% endfor %}
+  </ol></nav>
+  {% if app.status == 'info_required' and app.info_request %}<div class="notice notice-warn mb-2"><strong>NACB request:</strong> {{ app.info_request|linebreaksbr }}</div>{% endif %}
+
+  <div class="layout-side">
+  <div>
+  {% if n == 5 %}
+    <div class="card mb-2"><h2>Eligibility &amp; completeness check</h2>
+      <ul class="checklist">
+        {% for num, label in steps %}{% if num < 5 %}{% with ok=completion|get_item:num %}<li class="{% if ok %}ok{% else %}no{% endif %}"><span class="icon">{% if ok %}✓{% else %}!{% endif %}</span><div>Step {{ num }}: {{ label }} {% if not ok %},  <a href="{% url 'grants:step' app.reference num %}">complete this step</a>{% endif %}</div></li>{% endwith %}{% endif %}{% endfor %}
+        {% for label, ok, detail in checks %}<li class="{% if ok %}ok{% else %}no{% endif %}"><span class="icon">{% if ok %}✓{% else %}✗{% endif %}</span><div>{{ label }}{% if detail %}<div class="small muted">{{ detail }}</div>{% endif %}</div></li>{% endfor %}
+      </ul>
+    </div>
+    <div class="card mb-2"><h2>Summary</h2>
+      <dl class="dl">
+        <dt>Applicant</dt><dd>{{ app.profile.display_name }} {% if app.profile.registration_number %}({{ app.profile.registration_number }}){% endif %}</dd>
+        <dt>Project</dt><dd>{{ app.project_title|default:"None" }}</dd>
+        <dt>Art form</dt><dd>{{ app.category|default:"None" }}</dd>
+        <dt>Location</dt><dd>{{ app.get_district_display|default:"None" }}</dd>
+        <dt>Dates</dt><dd>{{ app.start_date|date:"j M Y"|default:"None" }} to {{ app.end_date|date:"j M Y"|default:"None" }}</dd>
+        <dt>Requested</dt><dd>{{ app.amount_requested|money }} of {{ app.total_project_cost|money }} total</dd>
+        <dt>Budget lines</dt><dd>{{ app.budget_items.count }} ({{ app.budget_total|money }})</dd>
+        <dt>Documents</dt><dd>{{ app.documents.count }} uploaded</dd>
+      </dl>
+    </div>
+    <form class="card" method="post" novalidate>{% csrf_token %}
+      {% include "includes/form.html" %}
+      <div class="form-actions">
+        <button class="btn btn-accent" type="submit" {% if not can_submit %}disabled aria-disabled="true"{% endif %}>{% if app.status == 'info_required' %}Resubmit application{% else %}Submit application{% endif %}</button>
+        {% if not can_submit %}<span class="small muted">Resolve the items marked ✗ above to submit.</span>{% endif %}
+      </div>
+    </form>
+  {% else %}
+  <form class="card" method="post" {% if n == 4 %}enctype="multipart/form-data"{% endif %} novalidate data-autosave="grant-{{ app.reference }}-{{ n }}" data-warn-unsaved>{% csrf_token %}
+    {% if n == 1 %}<h2>Project details</h2>
+      {% if form.non_field_errors %}<div class="alert alert-error">{{ form.non_field_errors }}</div>{% endif %}
+      {% include "includes/field.html" with field=form.project_title %}
+      <div class="form-row">{% include "includes/field.html" with field=form.category %}{% include "includes/field.html" with field=form.district %}</div>
+      {% include "includes/field.html" with field=form.summary %}
+      {% include "includes/field.html" with field=form.description %}
+      {% include "includes/field.html" with field=form.objectives %}
+      <div class="form-row">{% include "includes/field.html" with field=form.start_date %}{% include "includes/field.html" with field=form.end_date %}</div>
+    {% elif n == 2 %}<h2>Plan &amp; impact</h2>{% include "includes/form.html" %}
+    {% elif n == 3 %}<h2>Budget</h2>
+      {% if form.non_field_errors %}<div class="alert alert-error">{{ form.non_field_errors }}</div>{% endif %}
+      <div class="form-row">{% include "includes/field.html" with field=form.amount_requested %}{% include "includes/field.html" with field=form.total_project_cost %}</div>
+      <h3 class="mt-2">Budget breakdown</h3>
+      <p class="small muted">List each cost item. Attach supporting quotations in the Documents step.</p>
+      {{ formset.management_form }}
+      {% if formset.non_form_errors %}<div class="alert alert-error">{{ formset.non_form_errors }}</div>{% endif %}
+      <div class="table-wrap"><table>
+        <thead><tr><th>Category</th><th>Description</th><th>Qty</th><th>Unit cost (P)</th><th class="num">Total</th><th>Remove</th></tr></thead>
+        <tbody id="budget-rows">
+        {% for f in formset %}<tr>{{ f.id }}
+          <td>{{ f.category }}{{ f.category.errors }}</td><td>{{ f.description }}{{ f.description.errors }}</td>
+          <td style="width:90px">{{ f.quantity }}</td><td style="width:140px">{{ f.unit_cost }}{{ f.unit_cost.errors }}</td>
+          <td class="num line-total nowrap"></td><td>{% if f.instance.pk %}{{ f.DELETE }}{% endif %}</td></tr>{% endfor %}
+        </tbody>
+        <tfoot><tr><th colspan="4" class="right">Budget total</th><th class="num" id="budget-total"></th><th></th></tr></tfoot>
+      </table></div>
+      <template id="budget-empty"><tr>{% with f=formset.empty_form %}{{ f.id }}<td>{{ f.category }}</td><td>{{ f.description }}</td><td style="width:90px">{{ f.quantity }}</td><td style="width:140px">{{ f.unit_cost }}</td><td class="num line-total"></td><td></td>{% endwith %}</tr></template>
+      <button type="button" class="btn btn-ghost btn-sm mt-1" id="add-budget-row">+ Add budget line</button>
+      <div class="mt-2">{% include "includes/field.html" with field=form.other_funding %}</div>
+    {% elif n == 4 %}<h2>Compliance documents</h2>
+      <p class="muted">Upload each required document. Accepted: PDF, JPG, PNG, Word, Excel, max 5 MB each. Uploading a new file replaces the previous one.</p>
+      {% for field, existing in doc_rows %}
+        <div class="field{% if field.errors %} has-error{% endif %}" style="padding:1rem;border:1px solid var(--line);border-radius:var(--radius-sm)">
+          <div class="flex between"><label for="{{ field.id_for_label }}" class="field-label mb-0">{{ field.label }}</label>{% if existing %}<span class="badge badge-ok">✓ Uploaded</span>{% else %}<span class="badge badge-warn">Required</span>{% endif %}</div>
+          {% if field.help_text %}<span class="helptext">{{ field.help_text }}</span>{% endif %}
+          {% if existing %}<p class="small mt-1 mb-1">Current file: <a href="{% url 'grants:document' existing.pk %}">{{ existing.filename }}</a> · {{ existing.uploaded_at|date:"j M Y H:i" }}</p>{% endif %}
+          <input type="file" name="{{ field.html_name }}" id="{{ field.id_for_label }}" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx" data-max-mb="5" class="mt-1">
+          {{ field.errors }}
+        </div>
+      {% empty %}<p class="notice">This call does not require any documents.</p>{% endfor %}
+    {% endif %}
+    <div class="form-actions">
+      {% if n > 1 %}<a class="btn btn-ghost" href="{% url 'grants:step' app.reference n|add:'-1' %}">← Back</a>{% endif %}
+      <button class="btn btn-outline" type="submit" name="save">Save draft</button>
+      <button class="btn btn-primary" type="submit" name="next">Save &amp; continue →</button>
+    </div>
+  </form>
+  {% endif %}
+  </div>
+  <aside class="stack" style="position:sticky;top:96px">
+    <div class="card"><h3>Progress</h3><div class="progress"><span style="width:{{ app.completeness }}%"></span></div><p class="small mt-1 mb-0">{{ app.completeness }}% complete · last saved {{ app.updated_at|timesince }} ago</p></div>
+    <div class="card small"><h3>Call</h3><p class="mb-1"><strong>{{ call.title }}</strong></p><p class="mb-1">Funding: {{ call.min_amount|money }} to {{ call.max_amount|money }}</p><p class="mb-0">Closes {{ call.closes_at|date:"j M Y, H:i" }}</p></div>
+    <div class="card small"><h3>Need help?</h3><p class="mb-0">Read the <a href="{% url 'portal:faqs' %}">FAQs</a> or <a href="{% url 'portal:contact' %}?category=grants">contact the grants team</a>.</p></div>
+    {% if app.status == 'draft' %}<form method="post" action="{% url 'grants:withdraw' app.reference %}">{% csrf_token %}<button class="btn btn-danger btn-sm" type="submit" data-confirm="Discard this draft application?">Discard draft</button></form>{% endif %}
+  </aside>
+  </div>
+</div></section>
+{% endblock %}

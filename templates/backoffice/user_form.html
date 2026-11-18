@@ -1,0 +1,11 @@
+{% extends "backoffice/base.html" %}
+{% block title %}Add user{% endblock %}
+{% block staff %}
+<p class="small"><a href="{% url 'backoffice:user_list' %}">User management</a></p>
+<h1>Add user</h1>
+<form class="card form-card" method="post" novalidate>{% csrf_token %}
+  {% include "includes/form.html" %}
+  <p class="small muted">No password is set here. The person receives an email link to choose their own password. Staff should then turn on two-step verification.</p>
+  <div class="form-actions"><button class="btn btn-primary" type="submit">Create account</button></div>
+</form>
+{% endblock %}

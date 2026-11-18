@@ -1,0 +1,49 @@
+{% extends "base.html" %}{% load nacb %}
+{% block title %}{{ event.title }}{% endblock %}
+{% block description %}{{ event.summary }}{% endblock %}
+{% block content %}
+<header class="page-head"><div class="container"><div class="crumbs"><a href="{% url 'events:list' %}">Events</a> / {{ event.get_event_type_display }}</div>
+  <h1>{{ event.title }}</h1><p>{{ event.starts_at|date:"l j F Y, H:i" }} to {{ event.ends_at|date:"j F Y, H:i" }} · {{ event.venue }}, {{ event.get_district_display }}</p></div></header>
+<section class="section"><div class="container layout-side">
+  <article class="card prose" style="max-width:none">
+    {% if event.status == 'cancelled' %}<div class="notice notice-bad mb-2"><strong>This event has been cancelled.</strong></div>{% endif %}
+    {% if event.image %}<img src="{{ event.image.url }}" alt="" class="mb-2">{% endif %}
+    <p><strong>{{ event.summary }}</strong></p>
+    {{ event.description|safe }}
+    {% if event.disciplines.exists %}<h3>Disciplines</h3><ul class="pill-list">{% for d in event.disciplines.all %}<li><span class="pill">{{ d.name }}</span></li>{% endfor %}</ul>{% endif %}
+    {% if event.related_call %}<div class="notice notice-ok mt-3">Related funding: <a href="{{ event.related_call.get_absolute_url }}">{{ event.related_call.title }}</a> ({{ event.related_call.phase }})</div>{% endif %}
+    {% for n in news %}<p class="mt-2">📰 <a href="{{ n.get_absolute_url }}">{{ n.title }}</a></p>{% endfor %}
+    {% for a in albums %}<p>📷 <a href="{{ a.get_absolute_url }}">Photo gallery: {{ a.title }}</a></p>{% endfor %}
+  </article>
+  <aside class="stack" style="position:sticky;top:96px">
+    <div class="card">
+      <h3>Registration</h3>
+      {% if event.capacity %}<p class="small">Capacity {{ event.capacity }} · <strong>{{ event.spaces_left }}</strong> place{{ event.spaces_left|pluralize }} left{% if event.waitlist_count %} · {{ event.waitlist_count }} on waitlist{% endif %}</p>
+        <div class="progress mb-2"><span style="width:{{ event.confirmed_count|pct:event.capacity }}%"></span></div>{% endif %}
+      {% if reg and reg.status != 'cancelled' %}
+        <p>Your status: {% badge reg.status reg.get_status_display %}</p>
+        {% if not event.is_past %}<form method="post" action="{% url 'events:cancel' event.slug %}">{% csrf_token %}<button class="btn btn-danger btn-sm" type="submit" data-confirm="Cancel your registration?">Cancel my registration</button></form>{% endif %}
+      {% elif event.registration_open %}
+        {% if user.is_authenticated %}
+          <form method="post" action="{% url 'events:register' event.slug %}" novalidate>{% csrf_token %}
+            {% include "includes/form.html" %}
+            <button class="btn btn-accent" type="submit" style="width:100%">{% if event.is_full %}Join waiting list{% else %}Register{% endif %}</button></form>
+          {% if event.registered_only %}<p class="small muted mt-1 mb-0">Open to verified National Artist Register members.</p>{% endif %}
+        {% else %}<a class="btn btn-accent" style="width:100%" href="{% url 'accounts:login' %}?next={{ request.path }}">Sign in to register</a>{% endif %}
+        {% if event.registration_closes %}<p class="small muted mt-1 mb-0">Registration closes {{ event.registration_closes|date:"j M Y, H:i" }}</p>{% endif %}
+      {% elif not event.registration_required %}<p class="mb-0">No registration needed. All welcome.</p>
+      {% else %}<p class="mb-0 muted">Registration is closed.</p>{% endif %}
+    </div>
+    {% with packs=event.sponsorship_packages.all %}{% if packs and not event.is_past %}
+    <div class="card sponsor-box small"><h3>Sponsor this event</h3>
+      <p class="mb-1">Put your organisation's name behind {{ event.title }}.</p>
+      <ul>{% for pk in packs %}{% if pk.active %}<li>{{ pk.get_level_display }}{% if pk.amount %}: {{ pk.amount|money }}{% endif %}{% if not pk.available %} (taken){% endif %}</li>{% endif %}{% endfor %}</ul>
+      <a class="btn btn-primary btn-sm" href="{% url 'partnerships:partner' %}?interest=event&amp;event={{ event.pk }}#enquire">Enquire about sponsoring</a>
+    </div>{% endif %}{% endwith %}
+    <div class="card small"><h3>Details</h3><dl class="dl" style="grid-template-columns:1fr">
+      <dt>When</dt><dd>{{ event.starts_at|date:"D j M Y, H:i" }} to {{ event.ends_at|date:"H:i" }}</dd><dt>Where</dt><dd>{{ event.venue }}, {{ event.get_district_display }}</dd>
+      {% if event.organiser_contact %}<dt>Contact</dt><dd>{{ event.organiser_contact }}</dd>{% endif %}</dl>
+      {% if event.status == 'published' %}<a class="btn btn-outline btn-sm mt-2" href="{% url 'events:ics' event.slug %}">Add to calendar</a>{% endif %}</div>
+  </aside>
+</div></section>
+{% endblock %}

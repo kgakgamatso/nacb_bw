@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}{{ T.resources }}{% endblock %}
+{% block content %}
+<header class="page-head"><div class="container"><h1>Resources &amp; publications</h1><p>Guidelines, forms, policy documents, annual reports and research on Botswana's creative economy.</p></div></header>
+<section class="section"><div class="container">
+  <ul class="pill-list mb-3">
+    <li><a href="?" class="{% if not cat %}active{% endif %}">All</a></li>
+    {% for k, label in categories %}<li><a href="?category={{ k }}" class="{% if cat == k %}active{% endif %}">{{ label }}</a></li>{% endfor %}
+  </ul>
+  {% for group, items in grouped.items %}
+    <h2 class="mt-3">{{ group }}</h2>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Document</th><th>Year</th><th class="right">Download</th></tr></thead>
+      <tbody>{% for r in items %}<tr>
+        <td><strong>{{ r.title }}</strong>{% if r.description %}<div class="small muted">{{ r.description }}</div>{% endif %}</td>
+        <td>{{ r.year|default:"" }}</td>
+        <td class="right"><a class="btn btn-outline btn-sm" href="{% url 'portal:resource_download' r.pk %}">{% if r.file %}Download{% else %}Open link{% endif %}<span class="sr-only"> {{ r.title }}</span></a></td>
+      </tr>{% endfor %}</tbody>
+    </table></div>
+  {% empty %}<p class="empty">No documents in this category yet.</p>{% endfor %}
+</div></section>
+{% endblock %}

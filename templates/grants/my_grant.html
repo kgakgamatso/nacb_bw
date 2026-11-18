@@ -1,0 +1,30 @@
+{% extends "base.html" %}{% load nacb %}
+{% block title %}Grant reporting: {{ app.reference }}{% endblock %}
+{% block content %}
+<header class="page-head"><div class="container"><div class="crumbs"><a href="{% url 'portal:dashboard' %}">Dashboard</a></div>
+  <h1>{{ app.project_title }}</h1><p>{{ app.reference }} · award {{ ag.amount|money }}</p></div></header>
+<section class="section"><div class="container layout-side wide-aside">
+  <div class="stack">
+    <div class="card">
+      <div class="flex between"><h2 class="mb-0">Reporting</h2>{% badge ag.health ag.get_health_display %}</div>
+      <p class="mt-1">You agreed to report <strong>{{ ag.get_frequency_display|lower }}</strong>. Next report due <strong>{{ ag.next_report_due|date:"j F Y" }}</strong>{% if ag.is_overdue %} <span class="badge badge-bad">overdue</span>{% endif %}.</p>
+      {% if ag.conditions %}<p class="small"><strong>Conditions of award:</strong> {{ ag.conditions }}</p>{% endif %}
+      <p class="small muted mb-0">Regular reports are a condition of your grant. Late or missing reports may delay payments and affect future applications.</p>
+    </div>
+    <div class="card"><h2>Reports sent</h2>
+      <ul class="list-plain">{% for r in reports %}<li>
+        <div class="flex between"><strong>{{ r.get_report_type_display }} to {{ r.period }}</strong><span class="badge {% if r.status == 'accepted' %}badge-ok{% elif r.status == 'revision' %}badge-warn{% else %}badge-info{% endif %}">{{ r.get_status_display }}</span></div>
+        <div class="small muted">Sent {{ r.submitted_at|date:"j M Y" }} · {{ r.percent_complete }}% complete{% if r.spent_to_date %} · {{ r.spent_to_date|money }} spent{% endif %}</div>
+        {% if r.feedback %}<div class="notice small mt-1">NACB: {{ r.feedback }}</div>{% endif %}
+      </li>{% empty %}<li class="muted">No reports yet.</li>{% endfor %}</ul>
+    </div>
+  </div>
+  {% if ag.health != 'completed' %}
+  <form class="card" method="post" enctype="multipart/form-data" novalidate>{% csrf_token %}
+    <h2>Send a report</h2>
+    {% include "includes/form.html" %}
+    <button class="btn btn-primary" type="submit">Send report</button>
+  </form>
+  {% else %}<div class="card"><p class="mb-0">This grant was closed on {{ ag.closed_at|date:"j F Y" }}. Thank you for reporting.</p></div>{% endif %}
+</div></section>
+{% endblock %}

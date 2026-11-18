@@ -1,0 +1,24 @@
+{% extends "base.html" %}{% load nacb %}
+{% block title %}{{ req.reference }}{% endblock %}
+{% block content %}
+<header class="page-head"><div class="container"><div class="crumbs"><a href="{% url 'endorsements:mine' %}">My requests</a></div><h1>{{ req.event_name }}</h1><p>{{ req.reference }} · {{ req.get_purpose_display }}</p></div></header>
+<section class="section"><div class="container layout-side">
+  <div class="stack">
+    <div class="card"><div class="flex between"><h2 class="mb-0">Status</h2>{% badge req.status req.get_status_display %}</div>
+      {% if req.status == 'issued' %}<div class="notice notice-ok mt-2">Your letter is ready. <a class="btn btn-ok btn-sm" href="{% url 'endorsements:letter' req.reference %}">View &amp; print letter</a></div>
+      {% elif req.status == 'rejected' %}<div class="notice notice-bad mt-2">{{ req.staff_message }}</div>
+      {% elif req.status == 'info_required' %}<div class="notice notice-warn mt-2"><strong>NACB needs more information:</strong> {{ req.staff_message }}</div>
+      {% else %}<p class="mt-2 mb-0">Expected response by <strong>{{ req.due_date|date:"l j F Y" }}</strong>{% if req.working_days_left is not None and req.status != 'approved' %} ({{ req.working_days_left }} working day{{ req.working_days_left|pluralize }}){% endif %}.</p>{% endif %}
+    </div>
+    {% if form %}<form class="card" method="post" enctype="multipart/form-data" novalidate>{% csrf_token %}<h2>Update your request</h2>{% include "includes/form.html" %}<button class="btn btn-primary" type="submit">Resubmit</button></form>
+    {% else %}
+    <div class="card"><h2>Request details</h2><dl class="dl">
+      <dt>Addressed to</dt><dd>{{ req.recipient_name }}{% if req.recipient_address %}<br><span class="small muted">{{ req.recipient_address|linebreaksbr }}</span>{% endif %}</dd>
+      <dt>Event date</dt><dd>{{ req.event_date|date:"j M Y"|default:"None" }}</dd><dt>Destination</dt><dd>{{ req.destination|default:"None" }}</dd>
+      <dt>Justification</dt><dd>{{ req.justification|linebreaks }}</dd>
+      <dt>Document</dt><dd>{% if req.supporting_document %}<a href="{% url 'endorsements:document' req.reference %}">View uploaded document</a>{% else %}None{% endif %}</dd></dl></div>
+    {% endif %}
+  </div>
+  <aside class="card"><h3>Progress</h3><ul class="timeline">{% for h in history %}<li><strong>{{ h.to_label }}</strong><div class="when">{{ h.created_at|date:"j M Y H:i" }}</div>{% if h.note %}<div class="note">{{ h.note }}</div>{% endif %}</li>{% endfor %}</ul></aside>
+</div></section>
+{% endblock %}

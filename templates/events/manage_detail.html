@@ -1,0 +1,26 @@
+{% extends "backoffice/base.html" %}{% load nacb %}
+{% block title %}{{ event.title }}{% endblock %}
+{% block staff %}
+<p class="small"><a href="{% url 'events:manage_list' %}">← Events</a></p>
+<div class="flex between"><div><h1 class="mb-0">{{ event.title }}</h1><p class="muted">{{ event.starts_at|date:"j M Y H:i" }} · {{ event.venue }}, {{ event.get_district_display }}</p></div>
+  <div class="flex"><a class="btn btn-outline btn-sm" href="?export=csv">Export attendee list</a><a class="btn btn-ghost btn-sm" href="{{ event.get_absolute_url }}">Public page</a>{% if user.is_staff %}<a class="btn btn-ghost btn-sm" href="/admin/events/event/{{ event.pk }}/change/">Edit event</a>{% endif %}</div></div>
+<div class="tiles mt-2">
+  <div class="tile"><div class="num">{{ event.confirmed_count }}</div><div class="lbl">Confirmed / attended</div></div>
+  <div class="tile attn"><div class="num">{{ event.waitlist_count }}</div><div class="lbl">Waitlisted</div></div>
+  <div class="tile"><div class="num">{{ event.capacity|default:"∞" }}</div><div class="lbl">Capacity</div></div>
+  <div class="tile"><div class="num">{{ event.spaces_left|default_if_none:"∞" }}</div><div class="lbl">Places left</div></div>
+</div>
+<form method="post" action="{% url 'events:manage_attendance' event.slug %}">{% csrf_token %}
+<div class="table-wrap"><table>
+  <thead><tr><th>#</th><th>Name</th><th>Register no.</th><th>Contact</th><th>Entry / notes</th><th>Registered</th><th>Status / attendance</th></tr></thead>
+  <tbody>{% for r in regs %}<tr>
+    <td>{{ forloop.counter }}</td><td><strong>{{ r.user.display_name }}</strong>{% if r.group_size > 1 %}<div class="small muted">Group of {{ r.group_size }}</div>{% endif %}</td>
+    <td>{{ r.user.profile.registration_number|default:"None" }}</td><td class="small">{{ r.user.email }}<br>{{ r.user.phone }}</td>
+    <td class="small">{{ r.entry_title }}{% if r.special_requirements %}<div class="muted">Needs: {{ r.special_requirements }}</div>{% endif %}</td>
+    <td class="nowrap small">{{ r.created_at|date:"j M H:i" }}</td>
+    <td><label class="sr-only" for="s{{ r.pk }}">Status for {{ r.user.display_name }}</label><select id="s{{ r.pk }}" name="status_{{ r.pk }}" style="min-width:150px">{% for k, v in statuses %}<option value="{{ k }}" {% if r.status == k %}selected{% endif %}>{{ v }}</option>{% endfor %}</select></td>
+  </tr>{% empty %}<tr><td colspan="7" class="empty">No registrations yet.</td></tr>{% endfor %}</tbody>
+</table></div>
+{% if regs %}<div class="form-actions"><button class="btn btn-primary" type="submit">Save attendance &amp; statuses</button><span class="small muted">Freed places are automatically offered to the waitlist.</span></div>{% endif %}
+</form>
+{% endblock %}

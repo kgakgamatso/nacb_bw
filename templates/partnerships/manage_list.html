@@ -1,0 +1,19 @@
+{% extends "backoffice/base.html" %}{% load nacb %}
+{% block title %}Partnership enquiries{% endblock %}
+{% block staff %}
+<div class="flex between"><h1>Partnership enquiries</h1>{% if user.is_staff %}<a class="btn btn-outline btn-sm" href="/admin/partnerships/">Manage partners, packages and CSR programmes</a>{% endif %}</div>
+<p class="muted">{{ open_count }} open lead{{ open_count|pluralize }} from sponsors, CSR funders and partners.</p>
+<ul class="pill-list mb-2"><li><a href="?" class="{% if not status %}active{% endif %}">All</a></li>{% for k, v in statuses %}<li><a href="?status={{ k }}" class="{% if status == k %}active{% endif %}">{{ v }}</a></li>{% endfor %}</ul>
+<form class="filters" method="get">{% if status %}<input type="hidden" name="status" value="{{ status }}">{% endif %}<div><label for="q">Search</label><input id="q" type="search" name="q" value="{{ request.GET.q }}" placeholder="Organisation, contact or email"></div><button class="btn btn-primary" type="submit">Search</button></form>
+<div class="table-wrap"><table>
+  <thead><tr><th>Organisation</th><th>Interest</th><th>For</th><th>Budget</th><th>Status</th><th>Received</th><th>Officer</th></tr></thead>
+  <tbody>{% for e in enquiries %}<tr>
+    <td><a href="{% url 'partnerships:manage_detail' e.pk %}"><strong>{{ e.organisation }}</strong></a><div class="small muted">{{ e.contact_name }}</div></td>
+    <td>{{ e.get_interest_display }}</td>
+    <td class="small">{% if e.event %}{{ e.event.title }}{% elif e.programme %}{{ e.programme.title }}{% endif %}</td>
+    <td class="small">{{ e.get_budget_display }}</td>
+    <td><span class="badge {% if e.status == 'agreed' %}badge-ok{% elif e.status == 'declined' %}badge-muted{% elif e.status == 'new' %}badge-accent{% else %}badge-info{% endif %}">{{ e.get_status_display }}</span>{% if e.status == 'new' and e.age_days > 3 %} <span class="badge badge-bad">{{ e.age_days }} days</span>{% endif %}</td>
+    <td class="nowrap small">{{ e.created_at|date:"j M Y" }}</td><td class="small">{{ e.handled_by.get_full_name|default:"" }}</td>
+  </tr>{% empty %}<tr><td colspan="7" class="muted">No enquiries yet.</td></tr>{% endfor %}</tbody>
+</table></div>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends "backoffice/base.html" %}
+{% block title %}Communications{% endblock %}
+{% block staff %}
+<h1>Targeted communications</h1>
+<p class="muted">Send announcements to registered creatives filtered by district, discipline and type, delivered in-app, by email and optionally SMS.</p>
+<div class="layout-side wide-aside">
+  <form class="card" method="post" novalidate>{% csrf_token %}
+    {% include "includes/form.html" %}
+    {% if preview is not None %}<div class="notice {% if preview %}notice-ok{% else %}notice-warn{% endif %} mb-2">This message will reach <strong>{{ preview }}</strong> recipient{{ preview|pluralize }}.</div>{% endif %}
+    <div class="form-actions"><button class="btn btn-outline" type="submit" name="preview">Preview audience</button>{% if preview %}<button class="btn btn-accent" type="submit" name="send" data-confirm="Send this message to {{ preview }} recipient(s)?">Send to {{ preview }}</button>{% endif %}</div>
+  </form>
+  <div class="card"><h3>Recently sent</h3>
+    {% for c in history %}<div style="padding:.5rem 0;border-bottom:1px solid var(--line)"><strong>{{ c.subject }}</strong><div class="small muted">{{ c.created_at|date:"j M Y H:i" }} · {{ c.recipient_count }} recipients · {{ c.channels }} · {{ c.sender.get_full_name }}</div></div>{% empty %}<p class="muted">Nothing sent yet.</p>{% endfor %}</div>
+</div>
+{% endblock %}

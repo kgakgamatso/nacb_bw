@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}{{ v.title }}{% endblock %}
+{% block content %}
+<header class="page-head"><div class="container"><div class="crumbs"><a href="{% url 'portal:vacancies' %}">Jobs</a></div><h1>{{ v.title }}</h1><p>{{ v.department }} · {{ v.location }} · {{ v.get_employment_type_display }}</p></div></header>
+<section class="section"><div class="container layout-side">
+  <article class="card prose" style="max-width:none">
+    {% if not v.is_open %}<p class="notice notice-warn">This vacancy closed on {{ v.closing_date|date:"j F Y" }}.</p>{% endif %}
+    <p>{{ v.summary }}</p>
+    <h2>Duties</h2>{{ v.description|safe }}
+    <h2>Requirements</h2>{{ v.requirements|safe }}
+    <h2>How to apply</h2>{{ v.how_to_apply|linebreaks }}
+  </article>
+  <aside class="card">
+    <dl class="dl" style="grid-template-columns:1fr">
+      <dt>Reference</dt><dd>{{ v.reference }}</dd>
+      {% if v.grade %}<dt>Grade</dt><dd>{{ v.grade }}</dd>{% endif %}
+      <dt>Closing date</dt><dd><strong>{{ v.closing_date|date:"j F Y, H:i" }}</strong></dd>
+    </dl>
+    {% if v.document %}<a class="btn btn-outline mt-2" href="{{ v.document.url }}">Job profile (PDF)</a>{% endif %}
+    <p class="small muted mt-2 mb-0">NACB is an equal opportunity employer. Only shortlisted candidates will be contacted.</p>
+  </aside>
+</div></section>
+{% endblock %}

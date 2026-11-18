@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Privacy settings{% endblock %}
+{% block content %}
+<header class="page-head"><div class="container"><div class="crumbs"><a href="{% url 'portal:dashboard' %}">Dashboard</a></div><h1>Privacy &amp; public listing</h1><p>You decide what the public can see in the Artist Directory.</p></div></header>
+<section class="section"><div class="container layout-side">
+  <form class="card" method="post">{% csrf_token %}
+    {% include "includes/form.html" %}
+    <p class="small muted">Your ID number, date of birth, address and documents are never shown publicly. Only verified registrations appear in the directory.</p>
+    <div class="form-actions"><button class="btn btn-primary" type="submit">Save privacy settings</button>
+      {% if profile.is_public and profile.is_verified %}<a href="{{ profile.get_absolute_url }}">Preview my public profile →</a>{% endif %}</div>
+  </form>
+  <aside class="card small"><h3>Why list publicly?</h3><p class="mb-0">Promoters, event organisers, buyers and partners use the Artist Directory to find Botswana creatives. A listing can lead to bookings, commissions and collaborations.</p></aside>
+</div></section>
+{% endblock %}

@@ -1,0 +1,61 @@
+{% extends "backoffice/base.html" %}{% load nacb %}
+{% block title %}{{ p.display_name }}{% endblock %}
+{% block staff %}
+<p class="small"><a href="{% url 'backoffice:registry' %}">← Register</a></p>
+<div class="flex between"><div class="flex">
+  {% if p.avatar %}<img class="avatar" src="{{ p.avatar.url }}" alt="">{% else %}<span class="avatar" aria-hidden="true">{{ p.display_name|initials }}</span>{% endif %}
+  <div><h1 class="mb-0">{{ p.display_name }}</h1><p class="muted mb-0">{{ p.get_account_type_display }} · {{ p.registration_number|default:"No registration number yet" }}</p></div></div>
+  <div class="flex">{% badge p.status p.get_status_display %}<a class="btn btn-outline btn-sm" href="{% url 'backoffice:registry_edit' p.pk %}">Edit</a></div></div>
+
+{% if duplicates %}<div class="notice notice-bad mt-2"><strong>Possible duplicate:</strong> the same ID number is used by {% for d in duplicates %}<a href="{% url 'backoffice:registry_detail' d.pk %}">{{ d.display_name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}.</div>{% endif %}
+{% if p.status_note %}<div class="notice notice-warn mt-2"><strong>Note to registrant:</strong> {{ p.status_note }}</div>{% endif %}
+
+<div class="layout-side wide-aside mt-2">
+  <div class="stack">
+    <div class="card"><h2>Identity</h2><dl class="dl">
+      {% if p.account_type == 'organisation' %}
+        <dt>Organisation</dt><dd>{{ p.org_name }} ({{ p.get_org_type_display }})</dd><dt>Registration no.</dt><dd>{{ p.org_reg_number|default:"None" }}</dd>
+        <dt>Contact person</dt><dd>{{ p.contact_person }}</dd><dt>Members</dt><dd>{{ p.member_count|default:"None" }}</dd><dt>Established</dt><dd>{{ p.year_established|default:"None" }}</dd>
+      {% else %}
+        <dt>Full name</dt><dd>{{ p.user.get_full_name }}{% if p.stage_name %} (“{{ p.stage_name }}”){% endif %}</dd>
+        <dt>{{ p.get_id_type_display|default:"ID" }}</dt><dd>{{ p.national_id|default:"None" }}</dd>
+        <dt>Date of birth</dt><dd>{{ p.date_of_birth|date:"j M Y"|default:"None" }}</dd><dt>Gender</dt><dd>{{ p.get_gender_display|default:"None" }}</dd><dt>Citizenship</dt><dd>{{ p.get_citizenship_display|default:"None" }}</dd>
+      {% endif %}
+      <dt>ID document</dt><dd>{% if p.id_document %}<a href="{% url 'accounts:id_document' p.pk %}" target="_blank">Open document</a> <span class="small muted">(access is logged)</span>{% else %}<span class="badge badge-bad">Not uploaded</span>{% endif %}</dd>
+    </dl></div>
+    <div class="card"><h2>Contact &amp; location</h2><dl class="dl">
+      <dt>Email</dt><dd>{{ p.user.email }} {% if p.user.email_verified %}<span class="badge badge-ok">verified</span>{% endif %}</dd><dt>Phone</dt><dd>{{ p.phone }} {{ p.alt_phone }}</dd>
+      <dt>District</dt><dd>{{ p.get_district_display }}{% if p.town %}, {{ p.town }}{% endif %}</dd><dt>Address</dt><dd>{{ p.physical_address|linebreaksbr }}<br>{{ p.postal_address }}</dd></dl></div>
+    <div class="card"><h2>Creative practice</h2><dl class="dl">
+      <dt>Primary</dt><dd>{{ p.primary_discipline|default:"None" }}</dd><dt>Disciplines</dt><dd>{% for d in p.disciplines.all %}{{ d.name }}{% if not forloop.last %}, {% endif %}{% empty %}, {% endfor %}</dd>
+      <dt>Experience</dt><dd>{{ p.get_experience_level_display|default:"None" }}{% if p.years_experience %} · {{ p.years_experience }} years{% endif %}</dd>
+      <dt>Bio</dt><dd>{{ p.bio|linebreaks }}</dd><dt>Training</dt><dd>{{ p.training|linebreaks|default:"None" }}</dd><dt>Achievements</dt><dd>{{ p.achievements|linebreaks|default:"None" }}</dd>
+      <dt>Links</dt><dd>{% for l in "website facebook instagram youtube other_link"|make_list %}{% endfor %}{% if p.website %}<a href="{{ p.website }}" target="_blank" rel="noopener">Website</a> {% endif %}{% if p.facebook %}<a href="{{ p.facebook }}" target="_blank" rel="noopener">Facebook</a> {% endif %}{% if p.instagram %}<a href="{{ p.instagram }}" target="_blank" rel="noopener">Instagram</a> {% endif %}{% if p.youtube %}<a href="{{ p.youtube }}" target="_blank" rel="noopener">YouTube</a>{% endif %}</dd>
+    </dl></div>
+    <div class="card"><h2>Portfolio ({{ items|length }})</h2>
+      {% for i in items %}<p class="mb-1">• <a href="{% if i.file %}{% url 'accounts:portfolio_file' i.pk %}{% else %}{{ i.url }}{% endif %}" target="_blank" rel="noopener">{{ i.title }}</a> <span class="small muted">{{ i.get_kind_display }}{% if i.year %}, {{ i.year }}{% endif %}</span></p>{% empty %}<p class="muted">No portfolio items.</p>{% endfor %}</div>
+    <div class="card"><h2>Services</h2>
+      {% for a in apps %}<p class="mb-1"><a href="{% url 'grants:manage_detail' a.reference %}">{{ a.reference }}</a> {{ a.project_title }} {% badge a.status a.get_status_display %}</p>{% endfor %}
+      {% for e in ends %}<p class="mb-1"><a href="{% url 'endorsements:manage_detail' e.reference %}">{{ e.reference }}</a> {{ e.event_name }} {% badge e.status e.get_status_display %}</p>{% endfor %}
+      {% if not apps and not ends %}<p class="muted">No applications or requests.</p>{% endif %}</div>
+  </div>
+  <aside class="stack">
+    <div class="card"><h3>Verification</h3>
+      <p class="small">Completeness: <strong>{{ p.completeness }}%</strong></p>
+      {% if missing %}<ul class="small" style="padding-left:1rem">{% for m in missing %}<li>Missing: {{ m }}</li>{% endfor %}</ul>{% endif %}
+      <form method="post" action="{% url 'backoffice:registry_action' p.pk %}" class="stack">{% csrf_token %}
+        <div class="field mb-0"><label for="note">Note to registrant (required to flag/suspend)</label><textarea id="note" name="note" rows="3"></textarea></div>
+        <div class="flex">
+          {% if p.status != 'verified' %}<button class="btn btn-ok btn-sm" name="action" value="verify" type="submit" {% if missing %}disabled{% endif %}>✓ Verify &amp; issue number</button>{% endif %}
+          {% if p.status != 'flagged' %}<button class="btn btn-outline btn-sm" name="action" value="flag" type="submit">Flag for correction</button>{% endif %}
+          {% if p.status != 'suspended' %}<button class="btn btn-danger btn-sm" name="action" value="suspend" type="submit" data-confirm="Suspend this registration?">Suspend</button>{% endif %}
+          {% if p.status == 'suspended' or p.status == 'flagged' %}<button class="btn btn-ghost btn-sm" name="action" value="reopen" type="submit">Return to pending</button>{% endif %}
+        </div></form>
+      {% if p.verified_by %}<p class="small muted mt-2 mb-0">Verified by {{ p.verified_by.get_full_name }} on {{ p.verified_at|date:"j M Y" }}</p>{% endif %}
+      {% if p.assisted_by %}<p class="small muted mb-0">Captured by {{ p.assisted_by.get_full_name }} (assisted registration)</p>{% endif %}
+    </div>
+    <div class="card small"><h3>Privacy choices</h3><p class="mb-0">Public listing: <strong>{{ p.is_public|yesno:"Yes,No" }}</strong> · email {{ p.show_email|yesno:"shown,hidden" }} · phone {{ p.show_phone|yesno:"shown,hidden" }}</p><p class="mb-0">Consent recorded: {{ p.consent_at|date:"j M Y H:i"|default:"None" }}</p></div>
+    <div class="card small"><h3>Activity</h3>{% for h in history %}<p class="mb-1">{{ h.created_at|date:"j M H:i" }} · {{ h.action }} · {{ h.actor.get_full_name|default:h.actor.email }}</p>{% empty %}<p class="muted">No activity.</p>{% endfor %}</div>
+  </aside>
+</div>
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}{% if LANG == 'tn' and page.title_tn %}{{ page.title_tn }}{% else %}{{ page.title }}{% endif %}{% endblock %}
+{% block content %}
+<header class="page-head"><div class="container">
+  <h1>{% if LANG == 'tn' and page.title_tn %}{{ page.title_tn }}{% else %}{{ page.title }}{% endif %}</h1>
+  {% if page.summary %}<p>{{ page.summary }}</p>{% endif %}
+</div></header>
+<section class="section"><div class="container"><article class="prose card">
+  {% if LANG == 'tn' and page.body_tn %}{{ page.body_tn|safe }}{% else %}{{ page.body|safe }}{% endif %}
+  <p class="small muted mt-3">Last updated {{ page.updated_at|date:"j F Y" }}</p>
+</article></div></section>
+{% endblock %}

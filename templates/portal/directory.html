@@ -1,0 +1,25 @@
+{% extends "base.html" %}{% load nacb %}
+{% block title %}{{ T.directory }}{% endblock %}
+{% block content %}
+<header class="page-head"><div class="container"><h1>Artist Directory</h1><p>Discover verified creatives and organisations on the National Artist Register who have chosen to be listed publicly.</p></div></header>
+<section class="section"><div class="container">
+  <form class="filters" method="get" role="search">
+    <div><label for="f-q">Name</label><input id="f-q" type="search" name="q" value="{{ f.q }}"></div>
+    <div><label for="f-d">Discipline</label><select id="f-d" name="discipline"><option value="">All</option>{% for d in disciplines %}<option value="{{ d.slug }}" {% if f.discipline == d.slug %}selected{% endif %}>{{ d.name }}</option>{% endfor %}</select></div>
+    <div><label for="f-di">District</label><select id="f-di" name="district"><option value="">All</option>{% for k, v in districts %}<option value="{{ k }}" {% if f.district == k %}selected{% endif %}>{{ v }}</option>{% endfor %}</select></div>
+    <div><label for="f-t">Type</label><select id="f-t" name="type"><option value="">All</option><option value="individual" {% if f.type == 'individual' %}selected{% endif %}>Individuals</option><option value="organisation" {% if f.type == 'organisation' %}selected{% endif %}>Organisations</option></select></div>
+    <button class="btn btn-primary" type="submit">Filter</button>
+  </form>
+  <p class="muted small">{{ page.paginator.count }} listing{{ page.paginator.count|pluralize }}</p>
+  <div class="grid grid-3">
+    {% for p in page %}
+    <a class="card card-link" href="{{ p.get_absolute_url }}"><div class="artist-card">
+      {% if p.avatar %}<img class="avatar" src="{{ p.avatar.url }}" alt="">{% else %}<span class="avatar" aria-hidden="true">{{ p.display_name|initials }}</span>{% endif %}
+      <div><strong>{{ p.display_name }}</strong><div class="small muted">{{ p.primary_discipline|default:"" }}</div><div class="small muted">{{ p.get_district_display }}{% if p.account_type == 'organisation' %} · Organisation{% endif %}</div></div>
+    </div></a>
+    {% empty %}<p class="empty">No listings match your filters.</p>{% endfor %}
+  </div>
+  {% include "includes/pagination.html" %}
+  <div class="notice mt-3">Are you a creative? <a href="{% url 'accounts:signup' %}">Join the National Artist Register</a> and choose to be listed here.</div>
+</div></section>
+{% endblock %}

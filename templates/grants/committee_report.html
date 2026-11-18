@@ -1,0 +1,32 @@
+{% extends "backoffice/base.html" %}{% load static nacb %}
+{% block title %}Summary report: {{ s.call.reference }}{% endblock %}
+{% block staff %}
+<div class="flex no-print mb-2"><a class="btn btn-ghost btn-sm" href="{{ s.get_absolute_url }}">Back to sitting</a><button class="btn btn-primary btn-sm" onclick="window.print()">Print or save as PDF</button><a class="btn btn-outline btn-sm" href="?format=csv">Download CSV</a></div>
+<article class="report-doc">
+  <div class="flex between"><img src="{% static 'img/logo-dark.png' %}" alt="National Arts Council of Botswana" style="height:56px"><span class="small muted">Generated {{ now|date:"j F Y H:i" }}</span></div>
+  <h1 class="mt-3">Assessment committee summary report</h1>
+  <dl class="dl">
+    <dt>Grant call</dt><dd>{{ s.call.title }} ({{ s.call.reference }})</dd>
+    <dt>Call period</dt><dd>{{ s.call.opens_at|date:"j M Y" }} to {{ s.call.closes_at|date:"j M Y" }}</dd>
+    <dt>Sitting</dt><dd>{{ s.title }}, {{ s.meeting_date|date:"j F Y H:i" }}{% if s.venue %}, {{ s.venue }}{% endif %}</dd>
+    <dt>Chair</dt><dd>{{ s.chair.get_full_name }}</dd>
+    <dt>Members</dt><dd>{% for m in members %}{{ m.get_full_name|default:m.email }}{% if not forloop.last %}, {% endif %}{% endfor %}</dd>
+    <dt>Status</dt><dd>{{ s.get_status_display }}</dd>
+  </dl>
+  <h2 class="mt-3">Results</h2>
+  <p>{{ totals.applications }} applications assessed: <strong>{{ totals.approved }}</strong> funded, {{ totals.rejected }} not funded, {{ totals.deferred }} deferred. Total approved <strong>{{ totals.amount|money }}</strong>{% if s.budget_available %} of {{ s.budget_available|money }} available{% endif %}.</p>
+  <div class="grid grid-2">
+    <div><h3>Funding by district</h3><table><tbody>{% for k, v in by_district %}<tr><td>{{ k }}</td><td class="num">{{ v|money }}</td></tr>{% empty %}<tr><td class="muted">None</td></tr>{% endfor %}</tbody></table></div>
+    <div><h3>Funding by art form</h3><table><tbody>{% for k, v in by_form %}<tr><td>{{ k }}</td><td class="num">{{ v|money }}</td></tr>{% empty %}<tr><td class="muted">None</td></tr>{% endfor %}</tbody></table></div>
+  </div>
+  <h2 class="mt-3">Decision per application</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Rank</th><th>Reference</th><th>Applicant</th><th>Project</th><th class="num">Requested</th><th class="num">Score</th><th>Decision</th><th class="num">Approved</th></tr></thead>
+    <tbody>{% for d, sc in rows %}<tr><td>{{ d.rank|default:"" }}</td><td>{{ d.application.reference }}</td><td>{{ d.application.profile.display_name }}</td><td>{{ d.application.project_title }}{% if d.conditions or d.reason %}<div class="small muted">{{ d.conditions }}{{ d.reason }}</div>{% endif %}</td>
+      <td class="num">{{ d.application.amount_requested|money }}</td><td class="num">{% if sc.avg is not None %}{{ sc.avg }}%{% else %}None{% endif %}</td><td>{{ d.get_decision_display }}</td><td class="num">{% if d.amount %}{{ d.amount|money }}{% endif %}</td></tr>{% endfor %}</tbody>
+  </table></div>
+  {% if s.minutes %}<h2 class="mt-3">Minutes and resolutions</h2><p style="white-space:pre-line">{{ s.minutes }}</p>{% endif %}
+  {% if s.conflicts_declared %}<h3>Declarations of interest</h3><p style="white-space:pre-line">{{ s.conflicts_declared }}</p>{% endif %}
+  <div class="grid grid-2 mt-4"><div><hr><p class="small">Chairperson signature and date</p></div><div><hr><p class="small">Secretary signature and date</p></div></div>
+</article>
+{% endblock %}

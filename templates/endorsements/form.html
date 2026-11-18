@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Request an endorsement{% endblock %}
+{% block content %}
+<header class="page-head"><div class="container"><div class="crumbs"><a href="{% url 'endorsements:info' %}">Endorsements</a></div><h1>Request an endorsement letter</h1><p>Target turnaround: 10 working days.</p></div></header>
+<section class="section"><div class="container">
+  <form class="card form-card" method="post" enctype="multipart/form-data" novalidate data-autosave="endorsement-new">{% csrf_token %}
+    {% include "includes/form.html" %}
+    <div class="form-actions"><button class="btn btn-primary" type="submit">Submit request</button><a href="{% url 'endorsements:info' %}">Cancel</a></div>
+  </form>
+</div></section>
+{% endblock %}

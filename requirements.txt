@@ -1,0 +1,7 @@
+Django>=5.1,<5.3
+Pillow>=10.0
+whitenoise>=6.6
+psycopg[binary]>=3.1
+# production servers (not needed on Vercel)
+# gunicorn>=22   # Linux
+# waitress>=3   # Windows

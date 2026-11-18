@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Two-step verification{% endblock %}
+{% block content %}
+<section class="section"><div class="container" style="max-width:480px">
+  <form class="card" method="post" novalidate>{% csrf_token %}
+    <h1>Two-step verification</h1>
+    <p class="muted">Enter the 6-digit code from your authenticator app.</p>
+    {% include "includes/form.html" %}
+    <div class="form-actions"><button class="btn btn-primary" type="submit">Verify</button><a href="{% url 'accounts:login' %}">Cancel</a></div>
+  </form>
+</div></section>
+{% endblock %}

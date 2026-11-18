@@ -1,0 +1,28 @@
+{% extends "base.html" %}{% load static nacb %}
+{% block title %}{{ p.title }}{% endblock %}
+{% block description %}{{ p.summary }}{% endblock %}
+{% block content %}
+<header class="page-head"><div class="container"><div class="crumbs"><a href="{% url 'partnerships:partner' %}#csr">CSR programmes</a></div>
+  <h1>{{ p.title }}</h1><p>{{ p.summary }}</p></div></header>
+<section class="section"><div class="container layout-side wide-aside">
+  <article class="card prose" style="max-width:none">
+    {% if p.image %}<img src="{{ p.image.url }}" alt="" class="mb-2">{% endif %}
+    {{ p.description|safe }}
+    {% if p.items %}<h2>What your contribution pays for</h2><ul class="checklist">{% for i in p.items %}<li class="ok"><span class="icon">✓</span><div>{{ i }}</div></li>{% endfor %}</ul>{% endif %}
+  </article>
+  <aside class="stack">
+    <div class="card">
+      <h3>Funding</h3>
+      <div class="progress"><span style="width:{{ p.percent }}%"></span></div>
+      <p class="mt-1"><strong>{{ p.raised_amount|money }}</strong> secured of {{ p.target_amount|money }}<br><span class="small muted">{{ p.remaining|money }} still needed</span></p>
+      <dl class="dl small" style="grid-template-columns:1fr 1.3fr">
+        <dt>Theme</dt><dd>{{ p.get_theme_display }}</dd>
+        <dt>Where</dt><dd>{% if p.district %}{{ p.get_district_display }}{% else %}National{% endif %}</dd>
+        {% if p.beneficiaries %}<dt>Beneficiaries</dt><dd>{{ p.beneficiaries }} people</dd>{% endif %}
+      </dl>
+      <a class="btn btn-primary mt-2" style="width:100%" href="{% url 'partnerships:partner' %}?interest=csr&amp;programme={{ p.pk }}#enquire">Support this programme</a>
+    </div>
+    {% if others %}<div class="card"><h3>Other programmes</h3><ul class="list-plain">{% for o in others %}<li><a href="{{ o.get_absolute_url }}">{{ o.title }}</a><div class="small muted">{{ o.percent }}% funded</div></li>{% endfor %}</ul></div>{% endif %}
+  </aside>
+</div></section>
+{% endblock %}

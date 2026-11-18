@@ -1,0 +1,21 @@
+{% with wt=field.widget_type %}
+{% if wt == "hidden" %}{{ field }}{% else %}
+<div class="field{% if field.errors %} has-error{% endif %}" id="field-{{ field.name }}">
+  {% if wt == "checkbox" %}
+    <div class="check">{{ field }}<label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %}<span class="req" aria-hidden="true">*</span>{% endif %}</label></div>
+  {% elif wt == "radioselect" or wt == "checkboxselectmultiple" %}
+    <fieldset style="border:0;padding:0;margin:0;background:none">
+      <legend class="field-label" style="padding:0;font-size:1rem">{{ field.label }}{% if field.field.required %}<span class="req" aria-hidden="true">*</span>{% endif %}</legend>
+      <div class="choices {% if wt == 'checkboxselectmultiple' %}cols{% else %}cards{% endif %}">
+        {% for opt in field %}<label for="{{ opt.id_for_label }}">{{ opt.tag }} {{ opt.choice_label }}</label>{% endfor %}
+      </div>
+    </fieldset>
+  {% else %}
+    <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required or field.name in required_names %}<span class="req" aria-hidden="true">*</span>{% endif %}</label>
+    {{ field }}
+  {% endif %}
+  {% if field.help_text %}<span class="helptext" id="{{ field.auto_id }}_help">{{ field.help_text|safe }}</span>{% endif %}
+  {{ field.errors }}
+</div>
+{% endif %}
+{% endwith %}

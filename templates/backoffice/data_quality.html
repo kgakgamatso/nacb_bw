@@ -1,0 +1,11 @@
+{% extends "backoffice/base.html" %}
+{% block title %}Data quality{% endblock %}
+{% block staff %}
+<h1>Registry data quality</h1>
+<div class="stack">
+{% for title, count, sample in checks %}
+  <details class="faq" {% if count %}open{% endif %}><summary>{{ title }} <span class="badge {% if count %}badge-warn{% else %}badge-ok{% endif %}">{{ count }}</span></summary>
+    <div class="answer">{% for p in sample %}<p class="mb-1"><a href="{% url 'backoffice:registry_detail' p.pk %}">{{ p.display_name }}</a> <span class="small muted">{{ p.user.email }} · {{ p.get_status_display }}</span></p>{% empty %}<p class="mb-0">No issues found.</p>{% endfor %}{% if count > 10 %}<p class="small muted mb-0">Showing 10 of {{ count }}.</p>{% endif %}</div></details>
+{% endfor %}
+</div>
+{% endblock %}

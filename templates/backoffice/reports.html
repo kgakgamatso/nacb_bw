@@ -1,0 +1,25 @@
+{% extends "backoffice/base.html" %}{% load nacb %}
+{% block title %}Reports{% endblock %}
+{% block staff %}
+<div class="flex between"><h1>Reports &amp; statistics</h1>
+  <form class="flex" method="get"><label class="sr-only" for="call">Grant call</label><select id="call" name="call" style="width:auto"><option value="">All grant calls</option>{% for c in calls %}<option value="{{ c.pk }}" {% if call_id == c.pk|stringformat:'s' %}selected{% endif %}>{{ c.reference }} to {{ c.title|truncatechars:30 }}</option>{% endfor %}</select>
+    <button class="btn btn-outline btn-sm" type="submit">Apply</button><a class="btn btn-primary btn-sm" href="?{{ request.GET.urlencode }}&amp;export=1">Export statistics (CSV)</a></form></div>
+<p class="muted">Registry figures count verified registrations only. Detailed record-level exports are available on the <a href="{% url 'backoffice:registry' %}">Register</a> and <a href="{% url 'grants:manage_list' %}?all=1">Grant applications</a> pages.</p>
+<div class="tiles">
+  <div class="tile"><div class="num" style="font-size:1.35rem">{{ money.req|money }}</div><div class="lbl">Total requested</div></div>
+  <div class="tile"><div class="num" style="font-size:1.35rem">{{ money.awd|money }}</div><div class="lbl">Total awarded</div></div>
+</div>
+<div class="grid grid-2">
+  {% for title, data in sections.items %}<div class="card"><h3>{{ title }}</h3>
+    <ul class="bars">{% for label, c in data.0 %}<li><span>{{ label }}</span><span class="track"><span class="fill" style="width:{{ c|pct:data.1 }}%"></span></span><span class="val">{{ c }}</span></li>{% empty %}<li class="muted">No data yet</li>{% endfor %}</ul></div>{% endfor %}
+</div>
+<h2 class="mt-3">Grant calls</h2>
+<div class="table-wrap"><table><thead><tr><th>Call</th><th class="num">Applications</th><th class="num">Approved</th><th class="num">Success rate</th><th class="num">Requested</th><th class="num">Awarded</th></tr></thead><tbody>
+  {% for c in by_call %}<tr><td>{{ c.title }}<div class="small muted">{{ c.reference }}</div></td><td class="num">{{ c.n }}</td><td class="num">{{ c.approved }}</td><td class="num">{{ c.approved|pct:c.n }}%</td><td class="num">{{ c.requested|money }}</td><td class="num">{{ c.awarded|money }}</td></tr>{% endfor %}
+</tbody></table></div>
+<div class="grid grid-2 mt-3">
+  <div><h2>Event participation</h2><div class="table-wrap"><table><thead><tr><th>Event</th><th class="num">Confirmed</th><th class="num">Attended</th><th class="num">Waitlist</th></tr></thead><tbody>
+    {% for e in event_stats %}<tr><td>{{ e.title }}<div class="small muted">{{ e.starts_at|date:"j M Y" }}</div></td><td class="num">{{ e.confirmed }}</td><td class="num">{{ e.attended }}</td><td class="num">{{ e.waitlisted }}</td></tr>{% endfor %}</tbody></table></div></div>
+  <div><h2>Endorsements</h2><div class="card"><ul class="bars">{% for label, c in end_stats %}<li><span>{{ label }}</span><span class="track"><span class="fill" style="width:{{ c|pct:10 }}%"></span></span><span class="val">{{ c }}</span></li>{% empty %}<li class="muted">No requests yet</li>{% endfor %}</ul></div></div>
+</div>
+{% endblock %}

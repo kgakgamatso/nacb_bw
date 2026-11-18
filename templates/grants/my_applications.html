@@ -1,0 +1,15 @@
+{% extends "base.html" %}{% load nacb %}
+{% block title %}My grant applications{% endblock %}
+{% block content %}
+<header class="page-head"><div class="container"><div class="crumbs"><a href="{% url 'portal:dashboard' %}">Dashboard</a></div><h1>My grant applications</h1></div></header>
+<section class="section"><div class="container">
+  <div class="table-wrap"><table>
+    <thead><tr><th>Reference</th><th>Project</th><th>Call</th><th class="num">Requested</th><th>Status</th><th>Updated</th><th></th></tr></thead>
+    <tbody>{% for a in apps %}<tr>
+      <td class="nowrap">{{ a.reference }}</td><td>{{ a.project_title|default:"Untitled" }}</td><td>{{ a.call.title }}</td>
+      <td class="num">{{ a.amount_requested|money }}</td><td>{% badge a.status a.get_status_display %}</td><td class="nowrap">{{ a.updated_at|date:"j M Y" }}</td>
+      <td>{% if a.is_editable %}<a class="btn btn-primary btn-sm" href="{% url 'grants:step' a.reference 1 %}">Continue</a>{% else %}<a class="btn btn-outline btn-sm" href="{{ a.get_absolute_url }}">View</a>{% endif %}</td>
+    </tr>{% empty %}<tr><td colspan="7" class="empty">No applications yet. <a href="{% url 'grants:call_list' %}">See open calls</a>.</td></tr>{% endfor %}</tbody>
+  </table></div>
+</div></section>
+{% endblock %}

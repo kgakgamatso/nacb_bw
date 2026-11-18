@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}{{ T.search }}{% endblock %}
+{% block content %}
+<header class="page-head"><div class="container"><h1>Search</h1>
+  <form method="get" role="search" class="flex mt-2" style="max-width:640px"><label class="sr-only" for="q">Search the website</label>
+    <input id="q" type="search" name="q" value="{{ q }}" placeholder="Search news, events, grants, artists, documents…" style="flex:1" autofocus>
+    <button class="btn btn-accent" type="submit">Search</button></form>
+</div></header>
+<section class="section"><div class="container" style="max-width:860px">
+  {% if q %}<p class="muted">{{ results|length }} result{{ results|length|pluralize }} for “{{ q }}”</p>{% endif %}
+  <div class="stack">{% for kind, title, text, url in results %}
+    <a class="card card-link" href="{{ url }}"><div class="card-body"><h3 class="mb-1">{{ title }}</h3>{% if text %}<p class="small muted mb-0">{{ text|striptags|truncatechars:180 }}</p>{% endif %}</div></a>
+  {% empty %}{% if q %}<p class="empty">Nothing found. Try a different word, or browse <a href="{% url 'portal:faqs' %}">FAQs</a>.</p>{% endif %}{% endfor %}</div>
+</div></section>
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}My portfolio{% endblock %}
+{% block content %}
+<header class="page-head"><div class="container"><div class="crumbs"><a href="{% url 'portal:dashboard' %}">Dashboard</a></div><h1>My portfolio</h1><p>Showcase your work: images, videos, recordings, publications, CV and press.</p></div></header>
+<section class="section"><div class="container layout-side">
+  <div>
+    {% if items %}
+    <div class="portfolio-grid">{% for i in items %}
+      <figure>
+        {% if i.is_image %}<img src="{% url 'accounts:portfolio_file' i.pk %}" alt="{{ i.title }}" loading="lazy">{% endif %}
+        <figcaption><strong>{{ i.title }}</strong>{% if i.year %} ({{ i.year }}){% endif %}
+          <div class="small muted">{{ i.get_kind_display }}{% if not i.is_public or i.kind == 'cv' %} · private{% endif %}</div>
+          <div class="flex mt-1">{% if i.url %}<a class="small" href="{{ i.url }}" target="_blank" rel="noopener">Open link</a>{% endif %}{% if i.file %}<a class="small" href="{% url 'accounts:portfolio_file' i.pk %}">View file</a>{% endif %}
+            <form method="post" action="{% url 'accounts:portfolio_delete' i.pk %}" class="inline-form">{% csrf_token %}<button class="link-btn small" style="color:var(--bad)" type="submit" data-confirm="Remove “{{ i.title }}” from your portfolio?">Remove</button></form></div>
+        </figcaption>
+      </figure>
+    {% endfor %}</div>
+    {% else %}<p class="empty">Your portfolio is empty. Add your first item using the form.</p>{% endif %}
+  </div>
+  <form class="card" method="post" enctype="multipart/form-data" novalidate>{% csrf_token %}
+    <h2>Add an item</h2>
+    {% include "includes/form.html" %}
+    <p class="small muted">Files up to 5 MB: images, PDF, Word, MP3, MP4. For longer videos, paste a YouTube link.</p>
+    <button class="btn btn-primary" type="submit">Add to portfolio</button>
+  </form>
+</div></section>
+{% endblock %}

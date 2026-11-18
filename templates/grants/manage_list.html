@@ -1,0 +1,31 @@
+{% extends "backoffice/base.html" %}{% load nacb %}
+{% block title %}Grant applications{% endblock %}
+{% block staff %}
+<div class="flex between"><h1>Grant applications</h1><a class="btn btn-outline btn-sm" href="?{{ request.GET.urlencode }}&amp;export=csv">Export CSV</a></div>
+<ul class="pill-list mb-2">
+  <li><a href="?" class="{% if not f.status and not f.all %}active{% endif %}">Open queue</a></li>
+  {% for k, label in statuses %}{% if k != 'draft' %}<li><a href="?status={{ k }}" class="{% if f.status == k %}active{% endif %}">{{ label }} ({{ counts|get_item:k|default:0 }})</a></li>{% endif %}{% endfor %}
+  <li><a href="?all=1" class="{% if f.all %}active{% endif %}">All</a></li>
+</ul>
+<form class="filters" method="get">
+  {% if f.status %}<input type="hidden" name="status" value="{{ f.status }}">{% endif %}
+  <div><label for="q">Search</label><input id="q" type="search" name="q" value="{{ f.q }}" placeholder="Reference, title, name"></div>
+  <div><label for="call">Call</label><select id="call" name="call"><option value="">All calls</option>{% for c in calls %}<option value="{{ c.pk }}" {% if f.call == c.pk|stringformat:'s' %}selected{% endif %}>{{ c.reference }}</option>{% endfor %}</select></div>
+  <div><label for="district">District</label><select id="district" name="district"><option value="">All</option>{% for k, v in districts %}<option value="{{ k }}" {% if f.district == k %}selected{% endif %}>{{ v }}</option>{% endfor %}</select></div>
+  <div><label for="category">Art form</label><select id="category" name="category"><option value="">All</option>{% for d in disciplines %}<option value="{{ d.pk }}" {% if f.category == d.pk|stringformat:'s' %}selected{% endif %}>{{ d.name }}</option>{% endfor %}</select></div>
+  <div class="check" style="align-self:center"><input type="checkbox" id="mine" name="mine" value="1" {% if f.mine %}checked{% endif %}><label for="mine">Assigned to me</label></div>
+  <button class="btn btn-primary" type="submit">Filter</button>
+</form>
+<div class="table-wrap"><table>
+  <thead><tr><th>Reference</th><th>Applicant</th><th>Project</th><th>District</th><th class="num">Requested</th><th>Score</th><th>Status</th><th>Submitted</th><th>Officer</th></tr></thead>
+  <tbody>{% for a in page %}<tr>
+    <td class="nowrap"><a href="{% url 'grants:manage_detail' a.reference %}"><strong>{{ a.reference }}</strong></a></td>
+    <td>{{ a.profile.display_name }}<div class="small muted">{{ a.profile.registration_number|default:"unverified" }}</div></td>
+    <td>{{ a.project_title|truncatechars:50 }}<div class="small muted">{{ a.category|default:"" }}</div></td>
+    <td>{{ a.profile.get_district_display }}</td><td class="num">{{ a.amount_requested|money }}</td>
+    <td>{% if a.average_score is not None %}{{ a.average_score }}%{% else %}None{% endif %}</td>
+    <td>{% badge a.status a.get_status_display %}</td><td class="nowrap">{{ a.submitted_at|date:"j M Y" }}</td><td>{{ a.assigned_to.get_full_name|default:"None" }}</td>
+  </tr>{% empty %}<tr><td colspan="9" class="empty">No applications match.</td></tr>{% endfor %}</tbody>
+</table></div>
+{% include "includes/pagination.html" %}
+{% endblock %}

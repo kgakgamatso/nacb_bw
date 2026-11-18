@@ -1,0 +1,10 @@
+{% extends "base.html" %}{% load nacb %}
+{% block body %}
+<div class="staff-shell">
+  <aside class="staff-nav">
+    {% include "includes/az_menu.html" %}
+    <p class="small muted" style="padding:.8rem .55rem 0">{{ user.get_role_display }}{% if user.district %}, {{ user.get_district_display }}{% endif %}</p>
+  </aside>
+  <div class="staff-main">{% block staff %}{% endblock %}</div>
+</div>
+{% endblock %}

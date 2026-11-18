@@ -1,0 +1,26 @@
+{% extends "backoffice/base.html" %}{% load nacb %}
+{% block title %}National Artist Register{% endblock %}
+{% block staff %}
+<div class="flex between"><h1>National Artist Register</h1>
+  <div class="flex"><a class="btn btn-outline btn-sm" href="?{{ request.GET.urlencode }}&amp;export=csv">Export CSV ({{ total }})</a><a class="btn btn-primary btn-sm" href="{% url 'backoffice:assisted_registration' %}">+ Assisted registration</a></div></div>
+<form class="filters" method="get">
+  <div><label for="q">Search</label><input id="q" type="search" name="q" value="{{ f.q }}" placeholder="Name, reg. no, email, ID, phone"></div>
+  <div><label for="status">Status</label><select id="status" name="status"><option value="">All</option>{% for k, v in statuses %}<option value="{{ k }}" {% if f.status == k %}selected{% endif %}>{{ v }}</option>{% endfor %}</select></div>
+  <div><label for="type">Type</label><select id="type" name="type"><option value="">All</option>{% for k, v in types %}<option value="{{ k }}" {% if f.type == k %}selected{% endif %}>{{ v }}</option>{% endfor %}</select></div>
+  <div><label for="district">District</label><select id="district" name="district"><option value="">All</option>{% for k, v in districts %}<option value="{{ k }}" {% if f.district == k %}selected{% endif %}>{{ v }}</option>{% endfor %}</select></div>
+  <div><label for="discipline">Discipline</label><select id="discipline" name="discipline"><option value="">All</option>{% for d in disciplines %}<option value="{{ d.slug }}" {% if f.discipline == d.slug %}selected{% endif %}>{{ d.name }}</option>{% endfor %}</select></div>
+  <div><label for="gender">Gender</label><select id="gender" name="gender"><option value="">All</option>{% for k, v in genders %}<option value="{{ k }}" {% if f.gender == k %}selected{% endif %}>{{ v }}</option>{% endfor %}</select></div>
+  <div><label for="level">Experience</label><select id="level" name="level"><option value="">All</option>{% for k, v in levels %}<option value="{{ k }}" {% if f.level == k %}selected{% endif %}>{{ v }}</option>{% endfor %}</select></div>
+  <button class="btn btn-primary" type="submit">Filter</button>
+</form>
+<p class="small muted">{{ total }} record{{ total|pluralize }}</p>
+<div class="table-wrap"><table>
+  <thead><tr><th>Name</th><th>Reg. no.</th><th>Type</th><th>Discipline</th><th>District</th><th>Complete</th><th>Status</th><th>Registered</th></tr></thead>
+  <tbody>{% for p in page %}<tr>
+    <td><a href="{% url 'backoffice:registry_detail' p.pk %}"><strong>{{ p.display_name }}</strong></a><div class="small muted">{{ p.user.email }}</div></td>
+    <td class="nowrap">{{ p.registration_number|default:"None" }}</td><td>{{ p.get_account_type_display|truncatewords:1 }}</td><td>{{ p.primary_discipline|default:"None" }}</td>
+    <td>{{ p.get_district_display|default:"None" }}</td><td>{{ p.completeness }}%</td><td>{% badge p.status p.get_status_display %}</td><td class="nowrap">{{ p.created_at|date:"j M Y" }}</td>
+  </tr>{% empty %}<tr><td colspan="8" class="empty">No records match.</td></tr>{% endfor %}</tbody>
+</table></div>
+{% include "includes/pagination.html" %}
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends "backoffice/base.html" %}
+{% block title %}Edit {{ p.display_name }}{% endblock %}
+{% block staff %}
+<p class="small"><a href="{% url 'backoffice:registry_detail' p.pk %}">← {{ p.display_name }}</a></p>
+<h1>Edit registration: {{ p.display_name }}</h1>
+<form method="post" enctype="multipart/form-data" novalidate style="max-width:860px">{% csrf_token %}
+  {% if form.errors %}<div class="alert alert-error">Please correct the highlighted fields.</div>{% endif %}
+  {% for title, fields in form.sections %}<fieldset><legend>{{ title }}</legend>{% for field in fields %}{% include "includes/field.html" %}{% endfor %}</fieldset>{% endfor %}
+  <div class="form-actions"><button class="btn btn-outline" type="submit" name="save">Save</button>{% if p.status == 'incomplete' %}<button class="btn btn-primary" type="submit" name="submit">Save &amp; submit for verification</button>{% endif %}</div>
+</form>
+{% endblock %}

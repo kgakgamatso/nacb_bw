@@ -1,0 +1,29 @@
+{% extends "backoffice/base.html" %}{% load nacb %}
+{% block title %}{{ e.organisation }}{% endblock %}
+{% block staff %}
+<p class="small"><a href="{% url 'partnerships:manage_list' %}">Partnership enquiries</a></p>
+<div class="flex between"><div><h1 class="mb-0">{{ e.organisation }}</h1><p class="muted">{{ e.get_interest_display }} · received {{ e.created_at|date:"j M Y H:i" }}</p></div>
+  <span class="badge badge-info">{{ e.get_status_display }}</span></div>
+<div class="layout-side wide-aside">
+  <div class="stack">
+    <div class="card"><h2>Enquiry</h2><dl class="dl">
+      <dt>Contact</dt><dd>{{ e.contact_name }}{% if e.position %}, {{ e.position }}{% endif %}</dd>
+      <dt>Email</dt><dd><a href="mailto:{{ e.email }}">{{ e.email }}</a></dd>
+      <dt>Phone</dt><dd>{{ e.phone|default:"Not given" }}</dd>
+      {% if e.event %}<dt>Event</dt><dd><a href="{{ e.event.get_absolute_url }}">{{ e.event.title }}</a></dd>{% endif %}
+      {% if e.package %}<dt>Package</dt><dd>{{ e.package }} ({% if e.package.amount %}{{ e.package.amount|money }}{% else %}in kind{% endif %})</dd>{% endif %}
+      {% if e.programme %}<dt>CSR programme</dt><dd><a href="{{ e.programme.get_absolute_url }}">{{ e.programme.title }}</a></dd>{% endif %}
+      <dt>Budget</dt><dd>{{ e.get_budget_display|default:"Not given" }}</dd>
+      <dt>Message</dt><dd>{{ e.message|linebreaks|default:"No message" }}</dd>
+    </dl></div>
+    {% if e.notes %}<div class="card"><h2>Notes</h2><p style="white-space:pre-line" class="mb-0">{{ e.notes }}</p></div>{% endif %}
+  </div>
+  <form class="card" method="post" action="{% url 'partnerships:manage_update' e.pk %}">{% csrf_token %}
+    <h2>Follow up</h2>
+    <div class="field"><label for="status">Status</label><select id="status" name="status">{% for k, v in statuses %}<option value="{{ k }}" {% if e.status == k %}selected{% endif %}>{{ v }}</option>{% endfor %}</select></div>
+    <div class="field"><label for="note">Add a note</label><textarea id="note" name="note" rows="3" placeholder="e.g. Sent Gold package proposal"></textarea></div>
+    <button class="btn btn-primary" type="submit">Save</button>
+    <p class="small muted mt-2 mb-0">Marking a package enquiry as Agreed reserves one of that package's sponsor places.</p>
+  </form>
+</div>
+{% endblock %}

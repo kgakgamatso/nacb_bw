@@ -1,0 +1,28 @@
+{% extends "base.html" %}{% load nacb %}
+{% block title %}Data protection{% endblock %}
+{% block content %}
+<header class="page-head"><div class="container"><h1>Data protection and your rights</h1><p>How NACB looks after your personal information, and how to use your rights under the Botswana Data Protection Act.</p></div></header>
+<section class="section"><div class="container layout-side wide-aside">
+  <article class="card prose" style="max-width:none">
+    {% if page %}{{ page.body|safe }}{% endif %}
+    <h2>Your rights</h2>
+    <ul>
+      <li><strong>Access</strong>: get a copy of the information we hold about you.{% if user.is_authenticated %} You can <a href="{% url 'portal:my_data_export' %}">download it now</a>.{% endif %}</li>
+      <li><strong>Correction</strong>: most details can be changed yourself in your profile; ask us for anything else.</li>
+      <li><strong>Deletion</strong>: ask us to close your account and delete your data, except records we must keep by law (for example grant payments).</li>
+      <li><strong>Objection and restriction</strong>: ask us to stop or limit how we use your data.</li>
+      <li><strong>Withdraw consent</strong>: for example, remove yourself from the public directory or newsletter at any time.</li>
+    </ul>
+    <p>We respond within 30 days. Questions can also go to our data protection officer at <a href="mailto:{{ SITE.dpo }}">{{ SITE.dpo }}</a>.</p>
+    <p>Read the full <a href="/p/privacy/">privacy notice</a> and <a href="/p/cookies/">cookie notice</a>.</p>
+  </article>
+  <div class="stack">
+    <form class="card" method="post" novalidate>{% csrf_token %}
+      <h2>Make a request</h2>
+      {% include "includes/form.html" %}
+      <button class="btn btn-primary" type="submit">Send request</button>
+    </form>
+    {% if my_requests %}<div class="card"><h3>Your requests</h3><ul class="list-plain">{% for r in my_requests %}<li class="flex between"><span>{{ r.get_request_type_display }}<br><span class="small muted">{{ r.created_at|date:"j M Y" }} · reply by {{ r.due_date|date:"j M Y" }}</span></span><span class="badge {% if r.status == 'completed' %}badge-ok{% else %}badge-info{% endif %}">{{ r.get_status_display }}</span></li>{% endfor %}</ul></div>{% endif %}
+  </div>
+</div></section>
+{% endblock %}

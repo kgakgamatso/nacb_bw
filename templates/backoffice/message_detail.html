@@ -1,0 +1,15 @@
+{% extends "backoffice/base.html" %}
+{% block title %}{{ msg.subject }}{% endblock %}
+{% block staff %}
+<p class="small"><a href="{% url 'backoffice:messages' %}">← Support inbox</a></p>
+<h1>{{ msg.subject }}</h1>
+<div class="grid grid-2">
+  <div class="card"><dl class="dl"><dt>From</dt><dd>{{ msg.name }} · <a href="mailto:{{ msg.email }}">{{ msg.email }}</a> {{ msg.phone }}</dd><dt>Category</dt><dd>{{ msg.get_category_display }}</dd><dt>Received</dt><dd>{{ msg.created_at|date:"j M Y H:i" }}</dd></dl>
+    <div class="timeline mt-2"><div class="note">{{ msg.message }}</div></div></div>
+  <form class="card" method="post">{% csrf_token %}
+    {% if msg.resolved %}<p><span class="badge badge-ok">Resolved</span> by {{ msg.handled_by.get_full_name }}</p>{% if msg.response %}<div class="note" style="white-space:pre-line">{{ msg.response }}</div>{% endif %}
+    {% else %}<div class="field"><label for="response">Reply (emailed to {{ msg.email }})</label><textarea id="response" name="response" rows="6"></textarea></div>
+    <button class="btn btn-primary" type="submit">Send reply &amp; resolve</button>{% endif %}
+  </form>
+</div>
+{% endblock %}

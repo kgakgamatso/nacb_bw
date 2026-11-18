@@ -1,0 +1,34 @@
+{% extends "backoffice/base.html" %}{% load nacb %}
+{% block title %}Monitoring {{ app.reference }}{% endblock %}
+{% block staff %}
+<p class="small"><a href="{% url 'grants:monitor_list' %}">Grant monitoring</a></p>
+<div class="flex between"><div><h1 class="mb-0">{{ app.project_title }}</h1><p class="muted">{{ app.reference }} · {{ app.profile.display_name }} · award {{ ag.amount|money }}</p></div>{% badge ag.health ag.get_health_display %}</div>
+<div class="layout-side wide-aside">
+  <div class="stack">
+    <div class="card"><h2>Reports from the grantee</h2>
+      {% for r in reports %}<div class="mb-3">
+        <div class="flex between"><strong>{{ r.get_report_type_display }} to {{ r.period }}</strong><span class="badge {% if r.status == 'accepted' %}badge-ok{% elif r.status == 'revision' %}badge-warn{% else %}badge-info{% endif %}">{{ r.get_status_display }}</span></div>
+        <p class="small muted">Sent {{ r.submitted_at|date:"j M Y" }} · {{ r.percent_complete }}% complete · spent {{ r.spent_to_date|money }} · reached {{ r.beneficiaries_reached|default:"None" }} people · {{ r.jobs_created|default:"None" }} jobs</p>
+        <p style="white-space:pre-line">{{ r.progress }}</p>
+        {% if r.challenges %}<p class="small"><strong>Challenges:</strong> {{ r.challenges }}</p>{% endif %}
+        {% if r.attachment %}<p class="small"><a href="{% url 'grants:report_attachment' r.pk %}" target="_blank">Evidence attached</a></p>{% endif %}
+        {% if r.status == 'submitted' %}
+        <form method="post" action="{% url 'grants:monitor_review_report' r.pk %}" class="flex">{% csrf_token %}
+          <input name="feedback" placeholder="Feedback to the grantee" style="flex:1 1 240px">
+          <button class="btn btn-ok btn-sm" name="action" value="accepted" type="submit">Accept</button>
+          <button class="btn btn-outline btn-sm" name="action" value="revision" type="submit">Ask for changes</button></form>
+        {% elif r.feedback %}<p class="small notice">{{ r.feedback }} to {{ r.reviewed_by.get_full_name }}</p>{% endif %}
+      </div>{% empty %}<p class="muted">No reports yet. Next report due {{ ag.next_report_due|date:"j M Y" }}.</p>{% endfor %}
+    </div>
+    <div class="card"><h2>Monitoring visits</h2>
+      <ul class="list-plain">{% for v in visits %}<li><strong>{{ v.visit_date|date:"j M Y" }}</strong>, {{ v.officer.get_full_name }} · {{ v.get_health_display }}<p class="mb-0 small">{{ v.findings }}</p></li>{% empty %}<li class="muted">No visits recorded.</li>{% endfor %}</ul>
+      <form method="post" class="mt-2" novalidate>{% csrf_token %}{% include "includes/form.html" with form=visit %}<button class="btn btn-outline btn-sm" name="add_visit" type="submit">Record visit</button></form>
+    </div>
+  </div>
+  <form class="card" method="post" novalidate>{% csrf_token %}
+    <h2>Agreement</h2>
+    {% include "includes/form.html" %}
+    <button class="btn btn-primary" name="save_agreement" type="submit">Save</button>
+  </form>
+</div>
+{% endblock %}

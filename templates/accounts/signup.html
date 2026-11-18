@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}{{ T.signup }}{% endblock %}
+{% block content %}
+<header class="page-head"><div class="container"><h1>Create your NACB account</h1><p>Step 1 of 2: create your account. Next you'll complete your National Artist Register profile.</p></div></header>
+<section class="section"><div class="container layout-side">
+  <form class="card" method="post" novalidate>{% csrf_token %}
+    {% if form.non_field_errors %}<div class="alert alert-error">{{ form.non_field_errors }}</div>{% endif %}
+    {% include "includes/field.html" with field=form.account_type %}
+    <div class="form-row">{% include "includes/field.html" with field=form.first_name %}{% include "includes/field.html" with field=form.last_name %}</div>
+    {% include "includes/field.html" with field=form.org_name %}
+    <div class="form-row">{% include "includes/field.html" with field=form.email %}{% include "includes/field.html" with field=form.phone %}</div>
+    {% include "includes/field.html" with field=form.district %}
+    <div class="form-row">{% include "includes/field.html" with field=form.password1 %}{% include "includes/field.html" with field=form.password2 %}</div>
+    {% include "includes/field.html" with field=form.sms_opt_in %}
+    {% include "includes/field.html" with field=form.consent %}
+    <p class="small muted">Read our <a href="/p/privacy/">privacy notice</a> to learn how NACB protects your information.</p>
+    <div class="form-actions"><button class="btn btn-primary" type="submit">Create account</button><span class="small">Already registered? <a href="{% url 'accounts:login' %}">Sign in</a></span></div>
+  </form>
+  <aside class="stack">
+    <div class="card"><h3>What you'll need</h3><ul class="small" style="padding-left:1rem;margin:0">
+      <li>A valid email address and mobile number</li>
+      <li>Your Omang or passport number (individuals) or registration certificate (organisations)</li>
+      <li>A scanned copy of your ID / certificate (PDF or photo)</li>
+      <li>Details of your art form, experience and past work</li></ul></div>
+    <div class="card"><h3>Need help?</h3><p class="small mb-0">Visit your district office and an officer can register you, or call {{ SITE.phone }}.</p></div>
+  </aside>
+</div></section>
+{% endblock %}

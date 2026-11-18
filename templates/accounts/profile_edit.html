@@ -1,0 +1,29 @@
+{% extends "base.html" %}{% load nacb %}
+{% block title %}My Register profile{% endblock %}
+{% block content %}
+<header class="page-head"><div class="container"><div class="crumbs"><a href="{% url 'portal:dashboard' %}">Dashboard</a></div>
+  <h1>National Artist Register profile</h1><p>{{ profile.get_account_type_display }} · Status: {{ profile.get_status_display }}{% if profile.registration_number %} · {{ profile.registration_number }}{% endif %}</p></div></header>
+<section class="section"><div class="container layout-side">
+  <form method="post" enctype="multipart/form-data" novalidate data-autosave="profile-{{ profile.pk }}" data-warn-unsaved>{% csrf_token %}
+    {% if profile.status == 'flagged' %}<div class="notice notice-bad mb-2"><strong>Action required:</strong> {{ profile.status_note }}</div>{% endif %}
+    {% if form.errors %}<div class="alert alert-error" role="alert">Please correct the highlighted fields below.</div>{% endif %}
+    {% for title, fields in form.sections %}
+      <fieldset><legend>{{ title }}</legend>
+        {% for field in fields %}{% include "includes/field.html" %}{% endfor %}
+        {% if title == "Documents & photo" and profile.id_document %}<p class="small">Current document: <a href="{% url 'accounts:id_document' profile.pk %}">view uploaded file</a></p>{% endif %}
+      </fieldset>
+    {% endfor %}
+    <div class="form-actions" style="background:#fff;padding:1rem;border-radius:var(--radius);border:1px solid var(--line)">
+      <button class="btn btn-outline" type="submit" name="save">Save draft</button>
+      {% if profile.status == 'incomplete' or profile.status == 'flagged' %}<button class="btn btn-primary" type="submit" name="submit">Save &amp; submit for verification</button>{% else %}<button class="btn btn-primary" type="submit" name="save">Save changes</button>{% endif %}
+    </div>
+  </form>
+  <aside class="stack" style="position:sticky;top:96px">
+    <div class="card"><h3>Completeness</h3><div class="progress"><span style="width:{{ profile.completeness }}%"></span></div>
+      <p class="small mt-1"><strong>{{ profile.completeness }}%</strong> of required information</p>
+      {% if profile.missing_fields %}<ul class="small" style="padding-left:1rem;margin:0">{% for m in profile.missing_fields %}<li>{{ m }}</li>{% endfor %}</ul>{% else %}<p class="small mb-0" style="color:var(--ok)">✓ All required information provided.</p>{% endif %}</div>
+    <div class="card"><h3>Also manage</h3><p><a href="{% url 'accounts:portfolio' %}">Portfolio ({{ profile.portfolio.count }})</a></p><p class="mb-0"><a href="{% url 'accounts:privacy' %}">Privacy &amp; public listing</a></p></div>
+    <div class="card small"><strong>Your data is protected.</strong> ID numbers and documents are visible only to you and authorised NACB staff, and every staff access is logged.</div>
+  </aside>
+</div></section>
+{% endblock %}

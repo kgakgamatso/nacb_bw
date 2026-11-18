@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}No access{% endblock %}
+{% block content %}
+<section class="section"><div class="container" style="max-width:640px"><div class="card">
+  <h1>You don't have access to this page</h1>
+  <p>This part of the system is limited to particular roles. If you think you should have access, ask your system administrator.</p>
+  <a class="btn btn-primary" href="{% url 'portal:dashboard' %}">Go to my dashboard</a>
+</div></div></section>
+{% endblock %}

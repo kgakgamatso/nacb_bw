@@ -1,0 +1,18 @@
+{% extends "backoffice/base.html" %}
+{% block title %}Assisted registration{% endblock %}
+{% block staff %}
+<h1>Assisted registration</h1>
+<p class="muted" style="max-width:720px">Register a walk-in artist or organisation on their behalf. The registrant receives an email to set their own password; you can then capture the rest of their Register profile and upload their documents.</p>
+<form class="card form-card" method="post" novalidate>{% csrf_token %}
+  {% if form.non_field_errors %}<div class="alert alert-error">{{ form.non_field_errors }}</div>{% endif %}
+  {% include "includes/field.html" with field=form.account_type %}
+  <div class="form-row">{% include "includes/field.html" with field=form.first_name %}{% include "includes/field.html" with field=form.last_name %}</div>
+  {% include "includes/field.html" with field=form.org_name %}
+  <div class="form-row">{% include "includes/field.html" with field=form.email %}{% include "includes/field.html" with field=form.phone %}</div>
+  {% include "includes/field.html" with field=form.district %}
+  {% include "includes/field.html" with field=form.sms_opt_in %}
+  {% include "includes/field.html" with field=form.consent %}
+  <p class="small muted">Read the consent statement to the registrant and tick it only with their agreement.</p>
+  <div class="form-actions"><button class="btn btn-primary" type="submit">Create account &amp; continue</button></div>
+</form>
+{% endblock %}

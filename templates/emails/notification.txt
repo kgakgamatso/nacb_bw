@@ -1,0 +1,13 @@
+Dear {{ user.first_name|default:user.display_name }},
+
+{{ title }}
+
+{{ message }}
+{% if link %}
+View online: {{ link }}
+{% endif %}
+Kind regards,
+National Arts Council of Botswana
+Digital Services
+
+This is an automated message. To change your notification preferences, sign in and open Account settings.

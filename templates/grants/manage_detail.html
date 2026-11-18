@@ -1,0 +1,82 @@
+{% extends "backoffice/base.html" %}{% load nacb %}
+{% block title %}{{ app.reference }}{% endblock %}
+{% block staff %}
+<p class="small"><a href="{% url 'grants:manage_list' %}">← Grant applications</a></p>
+<div class="flex between"><div><h1 class="mb-0">{{ app.project_title|default:"Untitled" }}</h1><p class="muted">{{ app.reference }} · {{ app.call.title }} · {{ app.call.get_approval_levels_display }}</p></div>{% badge app.status app.get_status_display %}</div>
+
+<div class="layout-side wide-aside mt-2">
+<div class="stack">
+  <div class="card"><h2>Applicant</h2>
+    <dl class="dl">
+      <dt>Name</dt><dd><a href="{% url 'backoffice:registry_detail' app.profile.pk %}">{{ app.profile.display_name }}</a> ({{ app.profile.get_account_type_display }})</dd>
+      <dt>Register</dt><dd>{{ app.profile.registration_number|default:"None" }} {% badge app.profile.status app.profile.get_status_display %}</dd>
+      <dt>Contact</dt><dd>{{ app.applicant.email }} · {{ app.profile.phone }}</dd>
+      <dt>District</dt><dd>{{ app.profile.get_district_display }}</dd>
+      <dt>Discipline</dt><dd>{{ app.profile.primary_discipline|default:"None" }} · {{ app.profile.get_experience_level_display }}</dd>
+      <dt>Previous grants</dt><dd>{{ app.profile.grant_applications.count|add:"-1" }} other application(s)</dd>
+    </dl></div>
+
+  <div class="card"><h2>Eligibility checks</h2>
+    <ul class="checklist">{% for label, ok, detail in checks %}<li class="{% if ok %}ok{% else %}no{% endif %}"><span class="icon">{% if ok %}✓{% else %}✗{% endif %}</span><div>{{ label }}{% if detail %} <span class="small muted">({{ detail }})</span>{% endif %}</div></li>{% endfor %}</ul></div>
+
+  <div class="card"><h2>Project</h2>
+    <dl class="dl">
+      <dt>Art form</dt><dd>{{ app.category }}</dd><dt>Location</dt><dd>{{ app.get_district_display }}</dd>
+      <dt>Dates</dt><dd>{{ app.start_date|date:"j M Y" }} to {{ app.end_date|date:"j M Y" }}</dd>
+      <dt>Summary</dt><dd>{{ app.summary }}</dd>
+      <dt>Description</dt><dd>{{ app.description|linebreaks }}</dd>
+      <dt>Objectives</dt><dd>{{ app.objectives|linebreaks }}</dd>
+      <dt>Timeline</dt><dd>{{ app.timeline|linebreaks }}</dd>
+      <dt>Beneficiaries</dt><dd>{{ app.beneficiaries|linebreaks }}</dd>
+      <dt>Impact</dt><dd>{{ app.expected_impact|linebreaks }}</dd>
+      <dt>Jobs created</dt><dd>{{ app.jobs_created|default:"None" }}</dd>
+      <dt>Partners</dt><dd>{{ app.partners|linebreaks|default:"None" }}</dd>
+    </dl></div>
+
+  <div class="card"><h2>Budget</h2>
+    <p>Requested <strong>{{ app.amount_requested|money }}</strong> of total project cost <strong>{{ app.total_project_cost|money }}</strong>{% if app.total_project_cost %} ({{ app.amount_requested|pct:app.total_project_cost }}%){% endif %}</p>
+    <div class="table-wrap"><table><thead><tr><th>Category</th><th>Description</th><th class="num">Qty</th><th class="num">Unit</th><th class="num">Total</th></tr></thead><tbody>
+      {% for b in budget_items %}<tr><td>{{ b.get_category_display }}</td><td>{{ b.description }}</td><td class="num">{{ b.quantity|floatformat:"-2" }}</td><td class="num">{{ b.unit_cost|money }}</td><td class="num">{{ b.total|money }}</td></tr>{% endfor %}
+      <tr><th colspan="4" class="right">Total</th><th class="num">{{ app.budget_total|money }}</th></tr></tbody></table></div>
+    {% if app.other_funding %}<p class="mt-2"><strong>Other funding:</strong> {{ app.other_funding }}</p>{% endif %}</div>
+
+  <div class="card"><h2>Documents</h2>
+    <div class="table-wrap"><table><thead><tr><th>Document</th><th>File</th><th>Verified</th></tr></thead><tbody>
+      {% for dt, ok in doc_status %}{% if not ok %}<tr><td>{{ dt.name }}</td><td colspan="2"><span class="badge badge-bad">Missing</span></td></tr>{% endif %}{% endfor %}
+      {% for d in documents %}<tr><td>{{ d.doc_type.name }}</td><td><a href="{% url 'grants:document' d.pk %}" target="_blank">{{ d.filename }}</a><div class="small muted">{{ d.uploaded_at|date:"j M Y H:i" }}</div></td>
+        <td><form method="post" action="{% url 'grants:manage_verify_doc' app.reference d.pk %}">{% csrf_token %}<button class="btn btn-sm {% if d.verified %}btn-ok{% else %}btn-outline{% endif %}" type="submit">{% if d.verified %}✓ Verified{% else %}Mark verified{% endif %}</button></form>{% if d.verified_by %}<div class="small muted">{{ d.verified_by.get_full_name }}</div>{% endif %}</td></tr>{% endfor %}
+    </tbody></table></div></div>
+
+  <div class="card"><h2>Evaluations</h2>
+    {% for r in reviews %}<div style="padding:.6rem 0;border-bottom:1px solid var(--line)"><div class="flex between"><strong>{{ r.reviewer.get_full_name }}</strong><span><strong>{{ r.total }}/{{ r.max_total }}</strong> ({{ r.percentage }}%) · {{ r.get_recommendation_display }}</span></div>
+      <div class="small muted">{% for c in criteria %}{{ c.name }}: {{ r.scores|get_item:c.pk|default:"None" }}{% if not forloop.last %} · {% endif %}{% endfor %}{% with c=None %}{% endwith %}</div>
+      <p class="mb-0 mt-1">{{ r.comments }}</p>{% if r.recommended_amount %}<p class="small mb-0">Recommended amount: {{ r.recommended_amount|money }}</p>{% endif %}</div>
+    {% empty %}<p class="muted">No evaluations yet.</p>{% endfor %}
+    {% if app.average_score is not None %}<p class="mt-2 mb-0">Average score: <strong>{{ app.average_score }}%</strong></p>{% endif %}
+  </div>
+</div>
+
+<aside class="stack">
+  <form class="card" method="post" action="{% url 'grants:manage_assign' app.reference %}">{% csrf_token %}<h3>Assignment</h3>
+    {% include "includes/form.html" with form=assign_form %}<button class="btn btn-outline btn-sm" type="submit">Update</button></form>
+
+  {% if app.status != 'approved' and app.status != 'rejected' and app.status != 'withdrawn' %}
+  <form class="card" method="post" action="{% url 'grants:manage_review' app.reference %}" novalidate>{% csrf_token %}<h3>My evaluation</h3>
+    {% if not criteria %}<p class="small muted">No scoring criteria configured for this call.</p>{% endif %}
+    {% include "includes/form.html" with form=review_form %}<button class="btn btn-primary btn-sm" type="submit">Save evaluation</button></form>
+
+  <form class="card" method="post" action="{% url 'grants:manage_decide' app.reference %}" novalidate>{% csrf_token %}<h3>Workflow action</h3>
+    {% if decision_form.fields.action.choices %}{% include "includes/form.html" with form=decision_form %}<button class="btn btn-accent btn-sm" type="submit" data-confirm="Apply this action? The applicant will be notified.">Apply</button>
+    {% else %}<p class="small muted mb-0">{% if app.status == 'recommended' %}Awaiting a decision by an Approver.{% else %}No actions available.{% endif %}</p>{% endif %}
+  </form>
+  {% else %}
+  <div class="card"><h3>Decision</h3><p>{% badge app.status app.get_status_display %} by {{ app.decided_by.get_full_name }} on {{ app.decided_at|date:"j M Y" }}</p>{% if app.amount_awarded %}<p>Awarded: <strong>{{ app.amount_awarded|money }}</strong></p>{% endif %}<p class="small">{{ app.decision_note }}</p></div>
+  {% endif %}
+
+  <div class="card"><h3>History &amp; comments</h3>
+    <form method="post" action="{% url 'grants:manage_comment' app.reference %}" class="mb-2">{% csrf_token %}{% include "includes/form.html" with form=comment_form %}<button class="btn btn-ghost btn-sm" type="submit">Add internal comment</button></form>
+    <ul class="timeline">{% for h in history %}<li class="{% if h.internal %}internal{% endif %}"><div><strong>{% if h.to_label %}{{ h.to_label }}{% elif h.internal %}Internal note{% else %}Applicant message{% endif %}</strong></div><div class="when">{{ h.actor.get_full_name|default:h.actor.email }} · {{ h.created_at|date:"j M Y H:i" }}{% if h.internal %} · internal{% endif %}</div>{% if h.note %}<div class="note">{{ h.note }}</div>{% endif %}</li>{% endfor %}</ul>
+  </div>
+</aside>
+</div>
+{% endblock %}

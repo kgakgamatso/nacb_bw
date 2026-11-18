@@ -1,0 +1,52 @@
+{% extends "base.html" %}{% load nacb %}
+{% block title %}{{ call.title }}{% endblock %}
+{% block description %}{{ call.summary }}{% endblock %}
+{% block content %}
+<header class="page-head"><div class="container"><div class="crumbs"><a href="{% url 'grants:call_list' %}">Grants &amp; funding</a> / {{ call.get_instrument_display }}</div>
+  <h1>{{ call.title }}</h1><p>{{ call.summary }}</p></div></header>
+<section class="section"><div class="container layout-side">
+  <div class="stack">
+    <article class="card prose" style="max-width:none">
+      <h2>About this call</h2>{{ call.description|safe }}
+      <h2>Eligibility</h2>{{ call.eligibility|safe }}
+      {% if call.disciplines.exists %}<h3>Art forms covered</h3><ul class="pill-list">{% for d in call.disciplines.all %}<li><span class="pill">{{ d.name }}</span></li>{% endfor %}</ul>{% endif %}
+    </article>
+    {% if call.required_documents.exists %}
+    <div class="card"><h2>Documents you will need</h2>
+      <ul class="checklist">{% for d in call.required_documents.all %}<li class="ok"><span class="icon">📄</span><div><strong>{{ d.name }}</strong>{% if d.applies_to != 'both' %} <span class="badge badge-muted">{{ d.get_applies_to_display }}</span>{% endif %}<div class="small muted">{{ d.description }}</div></div></li>{% endfor %}</ul>
+      <p class="small muted mb-0">Accepted formats: PDF, JPG, PNG, Word, Excel, max 5 MB each.</p></div>
+    {% endif %}
+    {% if call.criteria.exists %}
+    <div class="card"><h2>How applications are assessed</h2>
+      <div class="table-wrap"><table><thead><tr><th>Criterion</th><th class="num">Max score</th></tr></thead><tbody>
+      {% for c in call.criteria.all %}<tr><td><strong>{{ c.name }}</strong><div class="small muted">{{ c.description }}</div></td><td class="num">{{ c.max_score }}</td></tr>{% endfor %}
+      </tbody></table></div></div>
+    {% endif %}
+  </div>
+  <aside class="stack" style="position:sticky;top:96px">
+    <div class="card">
+      <div class="mb-1">{% badge call.phase call.phase %}</div>
+      <dl class="dl small" style="grid-template-columns:1fr 1.4fr">
+        <dt>Reference</dt><dd>{{ call.reference }}</dd>
+        <dt>Funding</dt><dd>{{ call.min_amount|money }} to {{ call.max_amount|money }}</dd>
+        <dt>Opens</dt><dd>{{ call.opens_at|date:"j M Y" }}</dd>
+        <dt>Closes</dt><dd><strong>{{ call.closes_at|date:"j M Y, H:i" }}</strong></dd>
+        <dt>Applicants</dt><dd>{{ call.get_applicant_types_display }}</dd>
+        {% if call.requires_verified_registration %}<dt>Requires</dt><dd>Verified Register profile</dd>{% endif %}
+      </dl>
+      {% if existing %}
+        <p class="mt-2 small">Your application <strong>{{ existing.reference }}</strong>: {% badge existing.status existing.get_status_display %}</p>
+        <a class="btn btn-primary" href="{% if existing.is_editable %}{% url 'grants:step' existing.reference 1 %}{% else %}{{ existing.get_absolute_url }}{% endif %}">{% if existing.is_editable %}Continue application{% else %}View application{% endif %}</a>
+      {% elif call.is_open %}
+        {% if user.is_authenticated and user.is_creative %}
+          {% if call.requires_verified_registration and not user.profile.is_verified %}<div class="notice notice-warn small mt-2">Your Register profile must be verified before you can submit. You can start a draft now. <a href="{% url 'accounts:profile_edit' %}">Complete registration</a></div>{% endif %}
+          <form method="post" action="{% url 'grants:apply' call.slug %}" class="mt-2">{% csrf_token %}<button class="btn btn-accent" type="submit" style="width:100%">Start application</button></form>
+        {% elif user.is_authenticated %}<p class="small muted mt-2">Staff accounts cannot apply.</p>
+        {% else %}<a class="btn btn-accent mt-2" style="width:100%" href="{% url 'accounts:login' %}?next={{ request.path }}">Sign in to apply</a><p class="small mt-1 mb-0">No account? <a href="{% url 'accounts:signup' %}">Register</a></p>{% endif %}
+      {% endif %}
+      {% if call.guidelines_file %}<a class="btn btn-outline mt-2" style="width:100%" href="{{ call.guidelines_file.url }}">Download guidelines</a>{% endif %}
+    </div>
+    {% if call.events.exists %}<div class="card"><h3>Information sessions</h3>{% for e in call.events.all %}<p class="small mb-1"><a href="{{ e.get_absolute_url }}">{{ e.title }}</a>, {{ e.starts_at|date:"j M" }}</p>{% endfor %}</div>{% endif %}
+  </aside>
+</div></section>
+{% endblock %}

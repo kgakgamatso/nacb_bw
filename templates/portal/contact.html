@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}{{ T.contact }}{% endblock %}
+{% block content %}
+<header class="page-head"><div class="container"><h1>Contact NACB</h1><p>Questions, support with registration or applications, or feedback on this website, we're here to help.</p></div></header>
+<section class="section"><div class="container layout-side">
+  <form class="card" method="post" novalidate>{% csrf_token %}
+    <h2>Send us a message</h2>
+    {% include "includes/form.html" %}
+    <div class="form-actions"><button class="btn btn-primary" type="submit">Send message</button><span class="small muted">We aim to reply within 3 working days.</span></div>
+  </form>
+  <aside class="stack">
+    <div class="card"><h3>Head office</h3><p class="mb-1">{{ SITE.address }}</p><p class="mb-1">☎ <a href="tel:{{ SITE.phone|cut:' ' }}">{{ SITE.phone }}</a></p><p class="mb-1">✉ <a href="mailto:{{ SITE.email }}">{{ SITE.email }}</a></p><p class="small muted mb-0">{{ SITE.hours }}</p></div>
+    <div class="card"><h3>District offices</h3><p class="small">Need help in person? District officers can register you and help with submissions at the district offices of the Ministry responsible for Culture in all districts.</p></div>
+    <div class="card"><h3>Quick help</h3><ul class="small" style="padding-left:1rem;margin:0"><li><a href="{% url 'portal:faqs' %}">Frequently asked questions</a></li><li><a href="{% url 'accounts:password_reset' %}">Reset my password</a></li><li><a href="{% url 'endorsements:verify' %}">Verify an NACB letter</a></li></ul></div>
+  </aside>
+</div></section>
+{% endblock %}

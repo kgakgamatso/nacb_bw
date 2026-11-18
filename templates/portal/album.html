@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}{{ album.title }}{% endblock %}
+{% block content %}
+<header class="page-head"><div class="container"><div class="crumbs"><a href="{% url 'portal:gallery' %}">Gallery</a></div><h1>{{ album.title }}</h1><p>{{ album.description }}</p></div></header>
+<section class="section"><div class="container">
+  <div class="gallery-grid">{% for img in album.images.all %}
+    <figure><a href="{{ img.image.url }}"><img src="{{ img.image.url }}" alt="{{ img.caption|default:album.title }}" loading="lazy"></a>
+      {% if img.caption or img.credit %}<figcaption>{{ img.caption }}{% if img.credit %} · Photo: {{ img.credit }}{% endif %}</figcaption>{% endif %}</figure>
+  {% empty %}<p class="empty">Photos from this event will be added soon.</p>{% endfor %}</div>
+  {% if album.event %}<p class="mt-3">From the event: <a href="{{ album.event.get_absolute_url }}">{{ album.event.title }}</a></p>{% endif %}
+</div></section>
+{% endblock %}

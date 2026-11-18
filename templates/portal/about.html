@@ -1,0 +1,42 @@
+{% extends "base.html" %}{% load nacb %}
+{% block title %}{{ T.about }}{% endblock %}
+{% block content %}
+<header class="page-head"><div class="container">
+  <h1>{{ T.about }}</h1>
+  <p>A parastatal established under the National Arts Council of Botswana Act, 2020 (Act No. 10 of 2020), under the Ministry responsible for Culture.</p>
+</div></header>
+<section class="section"><div class="container layout-side">
+  <article class="prose card">
+    {% if page %}{% if LANG == 'tn' and page.body_tn %}{{ page.body_tn|safe }}{% else %}{{ page.body|safe }}{% endif %}{% endif %}
+  </article>
+  <aside class="stack">
+    <div class="card"><h3>Our mandate</h3>
+      <ul class="small" style="padding-left:1.1rem;margin:0">
+        <li>Develop, promote and protect the creative and cultural sector</li>
+        <li>Advise on policy and legislation</li>
+        <li>Facilitate industry growth and commercialisation of the arts</li>
+        <li>Administer grants and funding instruments</li>
+        <li>Maintain the National Arts &amp; Creative Industry Register</li>
+        <li>Build partnerships, programmes and initiatives</li>
+      </ul>
+    </div>
+    <div class="card"><h3>Key documents</h3><p class="small">Read the Act, strategic plan and annual reports.</p><a class="btn btn-outline btn-sm" href="{% url 'portal:resources' %}?category=policy">Policy &amp; legislation</a></div>
+  </aside>
+</div></section>
+
+{% for title, people in leaders %}{% endfor %}
+{% if board or management %}
+<section class="section section-alt"><div class="container">
+  {% if board %}<h2>Board of Directors</h2>
+  <div class="grid grid-4 mb-3">{% for m in board %}
+    <div class="card artist-card">{% if m.photo %}<img class="avatar" src="{{ m.photo.url }}" alt="">{% else %}<span class="avatar" aria-hidden="true">{{ m.name|initials }}</span>{% endif %}
+      <div><strong>{{ m.name }}</strong><div class="small muted">{{ m.position }}</div></div></div>
+  {% endfor %}</div>{% endif %}
+  {% if management %}<h2 class="mt-3">Executive Management</h2>
+  <div class="grid grid-4">{% for m in management %}
+    <div class="card artist-card">{% if m.photo %}<img class="avatar" src="{{ m.photo.url }}" alt="">{% else %}<span class="avatar" aria-hidden="true">{{ m.name|initials }}</span>{% endif %}
+      <div><strong>{{ m.name }}</strong><div class="small muted">{{ m.position }}</div></div></div>
+  {% endfor %}</div>{% endif %}
+</div></section>
+{% endif %}
+{% endblock %}

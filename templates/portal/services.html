@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}{{ T.services }}{% endblock %}
+{% block content %}
+<header class="page-head"><div class="container"><h1>{{ T.services }}</h1>
+<p>NACB services are available online, 24/7. Prefer help in person? Visit NACB headquarters or your district office and an officer will capture your details for you.</p></div></header>
+<section class="section"><div class="container grid grid-2">
+  <article class="card"><h2>National Artist Register</h2>
+    <p>Individuals and organisations in all art forms can register, maintain a digital portfolio and choose whether to appear in the public Artist Directory.</p>
+    <ul><li>Online registration and verification</li><li>Unique NACB registration number</li><li>Portfolio of images, video, audio and documents</li><li>Privacy controls over what is public</li></ul>
+    <a class="btn btn-primary" href="{% url 'accounts:signup' %}">Register now</a></article>
+  <article class="card"><h2>Grants &amp; funding</h2>
+    <p>Apply for the Arts and Culture Grant and future instruments such as the Botswana Creative Arts Fund through one online form.</p>
+    <ul><li>Multi-step form with draft saving</li><li>Automatic eligibility &amp; document checks</li><li>Status tracking and SMS / email updates</li></ul>
+    <a class="btn btn-primary" href="{% url 'grants:call_list' %}">View grant calls</a></article>
+  <article class="card"><h2>Events, competitions &amp; festivals</h2>
+    <p>Register for workshops, training, ward and district competitions of the National Arts Festival, exhibitions and more.</p>
+    <ul><li>Calendar filtered by type, district and date</li><li>Automatic waitlist when events are full</li><li>Add events to your phone calendar</li></ul>
+    <a class="btn btn-primary" href="{% url 'events:list' %}">Browse events</a></article>
+  <article class="card"><h2>Endorsement &amp; support letters</h2>
+    <p>Registered creatives can request NACB letters of support for visas, festivals, funding applications, permits and residencies.</p>
+    <ul><li>Target turnaround: 10 working days</li><li>Track progress online</li><li>Letters carry a verification code</li></ul>
+    <a class="btn btn-primary" href="{% url 'endorsements:info' %}">Request a letter</a></article>
+</div></section>
+{% endblock %}

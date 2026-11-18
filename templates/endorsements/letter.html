@@ -1,0 +1,14 @@
+{% extends "base.html" %}{% load static %}
+{% block title %}Letter {{ req.reference }}{% endblock %}
+{% block content %}
+<div class="container no-print mt-2 flex"><button class="btn btn-primary" onclick="window.print()">Print / save as PDF</button><a class="btn btn-ghost" href="{{ req.get_absolute_url }}">Back</a></div>
+<article class="letter">
+  <div class="letter-head"><img src="{% static 'img/logo-dark.png' %}" alt="National Arts Council of Botswana"><div class="small right">{{ SITE.address }}<br>{{ SITE.phone }} · {{ SITE.email }}</div></div>
+  <p>Ref: {{ req.reference }}<br>{{ req.issued_at|date:"j F Y" }}</p>
+  <p>{{ req.recipient_name }}{% if req.recipient_address %}<br>{{ req.recipient_address|linebreaksbr }}{% endif %}</p>
+  <div class="letter-body">{{ req.letter_body }}</div>
+  <p class="mt-4">Yours faithfully,</p>
+  <p style="margin-top:3rem"><strong>{{ req.signatory_name }}</strong><br>{{ req.signatory_title }}<br>National Arts Council of Botswana</p>
+  <div class="letter-foot">Verify this letter at {{ verify_url }} · Reference {{ req.reference }} · Code {{ req.verification_code }}</div>
+</article>
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends "base.html" %}{% load static nacb %}
+{% block title %}Gallery{% endblock %}
+{% block content %}
+<header class="page-head"><div class="container"><h1>Gallery</h1><p>Photos from NACB festivals, competitions, workshops and exhibitions.</p></div></header>
+<section class="section"><div class="container grid grid-3">
+  {% for a in albums %}
+  <a class="card card-link" href="{{ a.get_absolute_url }}">{% if a.cover %}<img class="card-img" src="{{ a.cover.image.url }}" alt="">{% endif %}
+    <div class="card-body"><h3>{{ a.title }}</h3><p class="small muted mb-0">{% if a.images.count %}{{ a.images.count }} photo{{ a.images.count|pluralize }}{% else %}Photos coming soon{% endif %} · {{ a.publish_at|date:"M Y" }}</p></div></a>
+  {% empty %}<p class="empty">No galleries published yet.</p>{% endfor %}
+</div></section>
+{% endblock %}

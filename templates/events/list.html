@@ -1,0 +1,36 @@
+{% extends "base.html" %}{% load nacb %}
+{% block title %}{{ T.events }}{% endblock %}
+{% block content %}
+<header class="page-head"><div class="container"><h1>Events, programmes &amp; competitions</h1><p>Festivals, workshops, training, exhibitions and competitions across Botswana, including the National Arts Festival ward, district and national rounds.</p></div></header>
+<section class="section"><div class="container layout-side wide-aside">
+  <div>
+    <form class="filters" method="get">
+      <div><label for="when">Show</label><select id="when" name="when"><option value="upcoming">Upcoming</option><option value="past" {% if when == 'past' %}selected{% endif %}>Past</option></select></div>
+      <div><label for="type">Type</label><select id="type" name="type"><option value="">All types</option>{% for k, v in types %}<option value="{{ k }}" {% if f.type == k %}selected{% endif %}>{{ v }}</option>{% endfor %}</select></div>
+      <div><label for="district">District</label><select id="district" name="district"><option value="">All districts</option>{% for k, v in districts %}<option value="{{ k }}" {% if f.district == k %}selected{% endif %}>{{ v }}</option>{% endfor %}</select></div>
+      <div><label for="month">Month</label><input type="month" id="month" name="month" value="{{ f.month }}"></div>
+      <button class="btn btn-primary" type="submit">Filter</button>
+    </form>
+    <div class="stack">
+    {% for e in events %}
+      <article class="card event-card">{% if e.image %}<a href="{{ e.get_absolute_url }}" tabindex="-1"><img class="event-thumb" src="{{ e.image.url }}" alt="" loading="lazy"></a>{% endif %}<div class="event-row">
+        <span class="date-chip"><span class="d">{{ e.starts_at|date:"j" }}</span><span class="m">{{ e.starts_at|date:"M" }}</span></span>
+        <div style="flex:1">
+          <div class="flex between">{% if e.status == 'cancelled' %}{% badge "cancelled" "Cancelled" %}{% elif e.registration_open %}{% if e.is_full %}{% badge "waitlisted" "Full, join the waitlist" %}{% else %}{% badge "confirmed" "Registration open" %}{% endif %}{% endif %}</div>
+          <h3 class="mb-1"><a href="{{ e.get_absolute_url }}">{{ e.title }}</a></h3>
+          <p class="small muted mb-1">{{ e.starts_at|date:"D j M Y, H:i" }} · {{ e.venue }}, {{ e.get_district_display }}</p>
+          <p class="mb-0">{{ e.summary }}</p>
+        </div></div></article>
+    {% empty %}<p class="empty">No events match your filters.</p>{% endfor %}
+    </div>
+  </div>
+  <aside>
+    <div class="card" style="padding:1rem">
+      <div class="flex between mb-1"><a href="?cal={{ prev_m }}&amp;when={{ when }}" aria-label="Previous month">‹</a><strong>{{ cal_label }}</strong><a href="?cal={{ next_m }}&amp;when={{ when }}" aria-label="Next month">›</a></div>
+      <table class="cal"><thead><tr>{% for d in "MTWTFSS" %}<th>{{ d }}</th>{% endfor %}</tr></thead><tbody>
+        {% for week in weeks %}<tr>{% for day, evs in week %}<td class="{% if today and day == today.day %}today{% endif %}">{% if day %}<span class="dnum">{{ day }}</span>{% for e in evs %}<a href="{{ e.get_absolute_url }}" title="{{ e.title }}">{{ e.title }}</a>{% endfor %}{% endif %}</td>{% endfor %}</tr>{% endfor %}
+      </tbody></table>
+    </div>
+  </aside>
+</div></section>
+{% endblock %}

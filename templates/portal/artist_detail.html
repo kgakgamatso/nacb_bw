@@ -1,0 +1,30 @@
+{% extends "base.html" %}{% load nacb %}
+{% block title %}{{ p.display_name }}{% endblock %}
+{% block content %}
+<header class="page-head"><div class="container"><div class="crumbs"><a href="{% url 'portal:directory' %}">Artist Directory</a></div>
+  <div class="flex" style="gap:1.25rem">
+    {% if p.avatar %}<img class="avatar avatar-lg" src="{{ p.avatar.url }}" alt="">{% else %}<span class="avatar avatar-lg" aria-hidden="true">{{ p.display_name|initials }}</span>{% endif %}
+    <div><h1>{{ p.display_name }}</h1><p>{{ p.primary_discipline|default:"" }} · {{ p.get_district_display }}{% if p.town %}, {{ p.town }}{% endif %}</p>
+      <span class="badge badge-ok">✓ NACB registered · {{ p.registration_number }}</span></div>
+  </div>
+</div></header>
+<section class="section"><div class="container layout-side">
+  <div class="stack">
+    {% if p.show_bio and p.bio %}<div class="card prose" style="max-width:none"><h2>About</h2>{{ p.bio|linebreaks }}{% if p.achievements %}<h3>Notable work</h3>{{ p.achievements|linebreaks }}{% endif %}</div>{% endif %}
+    {% if items %}<div><h2>Portfolio</h2><div class="portfolio-grid">{% for i in items %}
+      <figure>{% if i.is_image %}<img src="{% url 'accounts:portfolio_file' i.pk %}" alt="{{ i.title }}" loading="lazy">{% endif %}
+        <figcaption><strong>{{ i.title }}</strong>{% if i.year %} ({{ i.year }}){% endif %}<div class="small muted">{{ i.get_kind_display }}</div>
+          {% if i.url %}<a href="{{ i.url }}" rel="noopener" target="_blank">Open link</a>{% elif i.file and not i.is_image %}<a href="{% url 'accounts:portfolio_file' i.pk %}">View file</a>{% endif %}</figcaption></figure>
+    {% endfor %}</div></div>{% endif %}
+  </div>
+  <aside class="card"><h3>Details</h3>
+    <dl class="dl" style="grid-template-columns:1fr">
+      <dt>Disciplines</dt><dd>{% for d in p.disciplines.all %}{{ d.name }}{% if not forloop.last %}, {% endif %}{% empty %}{{ p.primary_discipline }}{% endfor %}</dd>
+      {% if p.experience_level %}<dt>Experience</dt><dd>{{ p.get_experience_level_display }}</dd>{% endif %}
+      {% if p.show_email %}<dt>Email</dt><dd><a href="mailto:{{ p.user.email }}">{{ p.user.email }}</a></dd>{% endif %}
+      {% if p.show_phone and p.phone %}<dt>Phone</dt><dd><a href="tel:{{ p.phone }}">{{ p.phone }}</a></dd>{% endif %}
+    </dl>
+    <div class="flex mt-2">{% if p.website %}<a class="btn btn-outline btn-sm" href="{{ p.website }}" rel="noopener" target="_blank">Website</a>{% endif %}{% if p.facebook %}<a class="btn btn-outline btn-sm" href="{{ p.facebook }}" rel="noopener" target="_blank">Facebook</a>{% endif %}{% if p.instagram %}<a class="btn btn-outline btn-sm" href="{{ p.instagram }}" rel="noopener" target="_blank">Instagram</a>{% endif %}{% if p.youtube %}<a class="btn btn-outline btn-sm" href="{{ p.youtube }}" rel="noopener" target="_blank">YouTube</a>{% endif %}</div>
+  </aside>
+</div></section>
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends "backoffice/base.html" %}
+{% block title %}Schedule a committee sitting{% endblock %}
+{% block staff %}
+<p class="small"><a href="{% url 'grants:committee_list' %}">Committee sittings</a></p>
+<h1>Schedule a committee sitting</h1>
+<form class="card form-card" method="post" novalidate>{% csrf_token %}
+  {% include "includes/form.html" %}
+  <p class="small muted">The sitting can only be held after the call's closing date. Members are notified when you save.</p>
+  <div class="form-actions"><button class="btn btn-primary" type="submit">Schedule</button></div>
+</form>
+{% endblock %}

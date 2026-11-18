@@ -1,0 +1,32 @@
+{% extends "backoffice/base.html" %}{% load nacb %}
+{% block title %}User management{% endblock %}
+{% block staff %}
+<div class="flex between"><h1>User management</h1>
+  <div class="flex"><a class="btn btn-outline btn-sm" href="?{{ request.GET.urlencode }}&amp;export=csv">Export CSV</a><a class="btn btn-primary btn-sm" href="{% url 'backoffice:user_create' %}">Add user</a></div></div>
+<p class="muted">{{ total }} accounts · {{ inactive }} deactivated</p>
+<form class="filters" method="get">
+  <div><label for="q">Search</label><input id="q" type="search" name="q" value="{{ f.q }}" placeholder="Name, email, phone, register no."></div>
+  <div><label for="role">Role</label><select id="role" name="role"><option value="">All roles</option>{% for k, v in roles %}<option value="{{ k }}" {% if f.role == k %}selected{% endif %}>{{ v }} ({{ counts|get_item:k }})</option>{% endfor %}</select></div>
+  <div><label for="district">District</label><select id="district" name="district"><option value="">All</option>{% for k, v in districts %}<option value="{{ k }}" {% if f.district == k %}selected{% endif %}>{{ v }}</option>{% endfor %}</select></div>
+  <div><label for="state">Status</label><select id="state" name="state"><option value="">Any</option><option value="active" {% if f.state == 'active' %}selected{% endif %}>Active</option><option value="inactive" {% if f.state == 'inactive' %}selected{% endif %}>Deactivated</option><option value="never" {% if f.state == 'never' %}selected{% endif %}>Never signed in</option><option value="nomfa" {% if f.state == 'nomfa' %}selected{% endif %}>Staff without two-step</option></select></div>
+  <button class="btn btn-primary" type="submit">Filter</button>
+</form>
+<form method="post" action="{% url 'backoffice:user_bulk' %}">{% csrf_token %}
+  <input type="hidden" name="next" value="{{ request.get_full_path }}">
+  <div class="table-wrap"><table>
+    <thead><tr><th><span class="sr-only">Select</span></th><th>User</th><th>Role</th><th>District</th><th>Status</th><th>Two-step</th><th>Last sign-in</th></tr></thead>
+    <tbody>{% for u in page %}<tr>
+      <td><input type="checkbox" name="ids" value="{{ u.pk }}" aria-label="Select {{ u.email }}" {% if u == user %}disabled{% endif %}></td>
+      <td><a href="{% url 'backoffice:user_detail' u.pk %}"><strong>{{ u.display_name }}</strong></a><div class="small muted">{{ u.email }}</div></td>
+      <td>{{ u.get_role_display }}</td><td>{{ u.get_district_display|default:"None" }}</td>
+      <td>{% if u.is_active %}<span class="badge badge-ok">Active</span>{% else %}<span class="badge badge-bad">Deactivated</span>{% endif %}</td>
+      <td>{% if u.mfa_enabled %}On{% else %}<span class="muted">Off</span>{% endif %}</td>
+      <td class="nowrap small">{{ u.last_login|date:"j M Y H:i"|default:"Never" }}</td></tr>
+    {% empty %}<tr><td colspan="7" class="muted">No users match.</td></tr>{% endfor %}</tbody>
+  </table></div>
+  <div class="form-actions"><label class="sr-only" for="bulk">With selected</label>
+    <select id="bulk" name="bulk" style="width:auto"><option value="">With selected…</option><option value="activate">Activate</option><option value="deactivate">Deactivate</option><option value="reset_password">Email a password reset link</option></select>
+    <button class="btn btn-outline btn-sm" type="submit" data-confirm="Apply this to the selected accounts?">Apply</button></div>
+</form>
+{% include "includes/pagination.html" %}
+{% endblock %}

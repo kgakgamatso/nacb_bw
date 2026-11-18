@@ -1,0 +1,69 @@
+{% extends "base.html" %}{% load nacb %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<section class="section-tight"><div class="container account-shell">
+  <aside class="card" style="padding:.75rem">{% include "includes/az_menu.html" %}</aside>
+  <div class="stack">
+    <div class="flex between">
+      <div><h1 class="mb-0">Dashboard</h1><p class="muted mb-0">{{ user.display_name }}{% if profile.registration_number %} · register no. {{ profile.registration_number }}{% endif %}</p></div>
+    </div>
+
+    {% if not user.email_verified %}
+    <div class="notice notice-warn flex between"><span>Please confirm your email address so you receive updates on your applications.</span>
+      <form method="post" action="{% url 'accounts:resend_verification' %}">{% csrf_token %}<button class="btn btn-outline btn-sm" type="submit">Send the link again</button></form></div>
+    {% endif %}
+
+    {% if profile %}
+    <div class="card">
+      <div class="flex between"><h2 class="mb-0">Registration {% badge profile.status profile.get_status_display %}</h2>
+        <a class="btn btn-primary btn-sm" href="{% url 'accounts:profile_edit' %}">{% if profile.status == 'incomplete' or profile.status == 'flagged' %}Complete registration{% else %}Edit profile{% endif %}</a></div>
+      {% if profile.status == 'incomplete' %}
+        <div class="mt-2"><div class="flex between small"><span>Profile complete</span><strong>{{ profile.completeness }}%</strong></div><div class="progress mt-1"><span style="width:{{ profile.completeness }}%"></span></div>
+        {% if profile.missing_fields %}<p class="small muted mt-1 mb-0">Still needed: {{ profile.missing_fields|join:", " }}</p>{% endif %}</div>
+      {% elif profile.status == 'pending' %}<p class="mt-1 mb-0 muted">Sent for verification on {{ profile.submitted_at|date:"j M Y" }}. We will let you know by email and SMS.</p>
+      {% elif profile.status == 'flagged' or profile.status == 'suspended' %}<div class="notice notice-bad mt-2">{{ profile.status_note }}</div>
+      {% elif profile.status == 'verified' %}<p class="mt-1 mb-0 muted">Verified{% if profile.verified_at %} on {{ profile.verified_at|date:"j M Y" }}{% endif %}. {% if profile.is_public %}<a href="{{ profile.get_absolute_url }}">See your public listing</a>.{% else %}You are not listed publicly.{% endif %}</p>{% endif %}
+    </div>
+    {% endif %}
+
+    {% for ag in agreements %}
+    <div class="card notice-ok">
+      <div class="flex between"><h2 class="mb-0">Funded project: {{ ag.application.project_title }}</h2>{% badge ag.health ag.get_health_display %}</div>
+      <p class="mt-1 mb-1">Award {{ ag.amount|money }} · next report due <strong>{{ ag.next_report_due|date:"j M Y" }}</strong>{% if ag.is_overdue %} <span class="badge badge-bad">overdue</span>{% endif %}</p>
+      <a class="btn btn-primary btn-sm" href="{% url 'grants:my_grant' ag.application.reference %}">Submit a report</a>
+    </div>
+    {% endfor %}
+
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="flex between"><h2 class="mb-0">Grant applications</h2><a class="small" href="{% url 'grants:my_applications' %}">All</a></div>
+        <ul class="list-plain">
+        {% for a in apps %}<li class="flex between"><div><a href="{% if a.is_editable %}{% url 'grants:step' a.reference 1 %}{% else %}{{ a.get_absolute_url }}{% endif %}">{{ a.project_title|default:"Untitled project" }}</a><div class="small muted">{{ a.reference }}</div></div>{% badge a.status a.get_status_display %}</li>
+        {% empty %}<li class="muted">None yet.{% if open_calls %} <a href="{{ open_calls.0.get_absolute_url }}">{{ open_calls.0.title }}</a> is open.{% endif %}</li>{% endfor %}
+        </ul>
+      </div>
+      <div class="card">
+        <div class="flex between"><h2 class="mb-0">Notifications</h2><a class="small" href="{% url 'portal:notifications' %}">All</a></div>
+        <ul class="list-plain">
+        {% for n in notifications %}<li><a href="{% url 'portal:notification_open' n.pk %}">{% if not n.is_read %}<strong>{{ n.title }}</strong>{% else %}{{ n.title }}{% endif %}</a><div class="small muted">{{ n.created_at|timesince }} ago</div></li>
+        {% empty %}<li class="muted">Nothing new.</li>{% endfor %}
+        </ul>
+      </div>
+      <div class="card">
+        <div class="flex between"><h2 class="mb-0">My events</h2><a class="small" href="{% url 'events:list' %}">Calendar</a></div>
+        <ul class="list-plain">
+        {% for r in regs %}<li class="event-row"><span class="date-chip"><span class="d">{{ r.event.starts_at|date:"j" }}</span><span class="m">{{ r.event.starts_at|date:"M" }}</span></span><div><a href="{{ r.event.get_absolute_url }}">{{ r.event.title }}</a><div>{% badge r.status r.get_status_display %}</div></div></li>
+        {% empty %}<li class="muted">You have not registered for any upcoming events.</li>{% endfor %}
+        </ul>
+      </div>
+      <div class="card">
+        <div class="flex between"><h2 class="mb-0">Support letters</h2><a class="small" href="{% url 'endorsements:create' %}">New request</a></div>
+        <ul class="list-plain">
+        {% for e in endorsements %}<li class="flex between"><div><a href="{{ e.get_absolute_url }}">{{ e.event_name }}</a><div class="small muted">{{ e.reference }} · due {{ e.due_date|date:"j M" }}</div></div>{% badge e.status e.get_status_display %}</li>
+        {% empty %}<li class="muted">No requests yet.</li>{% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+</div></section>
+{% endblock %}
