@@ -125,3 +125,17 @@ def icon(name, size=24, label=""):
     if label:
         return format_html('<svg class="icon" width="{}" height="{}" role="img" aria-label="{}"><use href="#i-{}"></use></svg>', size, size, label, name)
     return format_html('<svg class="icon" width="{}" height="{}" aria-hidden="true" focusable="false"><use href="#i-{}"></use></svg>', size, size, name)
+
+
+SECTION_THEMES = {
+    "grants": "sun", "events": "sky", "news": "press", "directory": "weave", "artists": "weave", "artist": "weave",
+    "jobs": "grid", "tenders": "grid", "partner": "gold", "endorsements": "seal", "gallery": "lilac",
+    "resources": "grid", "data-protection": "calm", "privacy": "calm", "cookies": "calm",
+}
+
+
+@register.filter
+def section_theme(path):
+    """Header style for a page, from the first part of its URL (e.g. /grants/... gives "sun")."""
+    first = (path or "/").strip("/").split("/")[0]
+    return "s-" + SECTION_THEMES.get(first, "night")

@@ -185,3 +185,102 @@ a.now-item:hover { background: rgba(255,255,255,.13); transform: translateY(-2px
   .partner-cta { width: 100%; }
 }
 @media (max-width: 600px) { .loom { opacity: .4; } }
+
+/* ---------- Navigation: links stay visible as a swipeable row instead of hiding under "Menu" ---------- */
+@media (max-width: 1180px) {
+  .nav-toggle { display: none !important; }
+  .site-header .container { flex-wrap: wrap; row-gap: 0; }
+  .main-nav { display: block !important; order: 3; flex: 0 0 100%; padding: 0 0 .55rem;
+    -webkit-mask-image: linear-gradient(90deg, #000 88%, transparent); mask-image: linear-gradient(90deg, #000 88%, transparent); }
+  .main-nav ul { flex-direction: row; flex-wrap: nowrap; justify-content: flex-start; overflow-x: auto; scrollbar-width: none; gap: .25rem; padding-right: 2.5rem; }
+  .main-nav ul::-webkit-scrollbar { display: none; }
+  .main-nav li { flex: 0 0 auto; }
+  .main-nav a { font-size: .9rem; padding: .4rem .85rem; background: rgba(255,255,255,.06); }
+  .header-actions { margin-left: auto; }
+}
+@media (max-width: 600px) {
+  .site-header .container { min-height: 58px; }
+  .brand img { height: 38px; }
+  .main-nav a { font-size: .85rem; padding: .35rem .75rem; }
+}
+
+/* ---------- Page headers: each part of the site has its own look ---------- */
+.page-head { position: relative; overflow: hidden; padding: 2.4rem 0 2.1rem; }
+.page-head .container { position: relative; z-index: 1; }
+.page-head h1 { font-family: var(--display); font-weight: 800; font-size: clamp(1.9rem, 4.2vw, 3rem); letter-spacing: -.03em; line-height: 1.02; margin-bottom: .5rem; }
+.page-head p { font-size: 1.02rem; }
+.page-head::before, .page-head::after { content: ""; position: absolute; pointer-events: none; }
+
+/* Default: night sky with a basket ring */
+.s-night .page-head { background: radial-gradient(600px 300px at 90% 120%, rgba(242,132,58,.35), transparent 60%), linear-gradient(160deg, var(--night), #1b2050); }
+.s-night .page-head::after { right: -60px; top: 50%; width: 340px; height: 340px; transform: translateY(-50%); opacity: .55;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200' fill='none'%3E%3Cg stroke='%23f4c35a' stroke-width='1.2'%3E%3Ccircle cx='100' cy='100' r='96'/%3E%3Ccircle cx='100' cy='100' r='70' stroke='%23f2843a' stroke-dasharray='6 5'/%3E%3Ccircle cx='100' cy='100' r='46' stroke='%239c86ff'/%3E%3Ccircle cx='100' cy='100' r='24' stroke-dasharray='2 4'/%3E%3C/g%3E%3C/svg%3E") center/contain no-repeat; }
+
+/* Grants: sunset with rising bars */
+.s-sun .page-head { background: linear-gradient(115deg, #ffcf6e 0%, #f2843a 45%, #e3483a 100%); }
+.s-sun .page-head h1, .s-sun .page-head a { color: #2a0f02; }
+.s-sun .page-head p, .s-sun .page-head .crumbs { color: #4a2006; }
+.s-sun .page-head::after { right: 4%; bottom: 0; width: 260px; height: 100%; opacity: .3;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 150 100'%3E%3Cg fill='%232a0f02'%3E%3Crect x='0' y='70' width='18' height='30' rx='4'/%3E%3Crect x='26' y='55' width='18' height='45' rx='4'/%3E%3Crect x='52' y='40' width='18' height='60' rx='4'/%3E%3Crect x='78' y='26' width='18' height='74' rx='4'/%3E%3Crect x='104' y='12' width='18' height='88' rx='4'/%3E%3Ccircle cx='140' cy='8' r='7'/%3E%3C/g%3E%3C/svg%3E") right bottom/contain no-repeat; }
+
+/* Events: sky to lilac with a calendar dot grid */
+.s-sky .page-head { background: linear-gradient(120deg, #1d3c8f, #4f6fe8 55%, #9c86ff); }
+.s-sky .page-head::after { right: 0; top: 0; width: 46%; height: 100%; opacity: .5;
+  background-image: radial-gradient(circle, rgba(255,255,255,.75) 2px, transparent 2.5px); background-size: 26px 26px;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 60%); mask-image: linear-gradient(90deg, transparent, #000 60%); }
+.s-sky .page-head p, .s-sky .page-head .crumbs { color: #e4e9ff; }
+
+/* News: light editorial page with an outlined masthead word */
+.s-press .page-head { background: #f3efe6; }
+.s-press .page-head h1, .s-press .page-head a { color: var(--night); }
+.s-press .page-head h1 { font-size: clamp(2.2rem, 5.5vw, 3.8rem); }
+.s-press .page-head p, .s-press .page-head .crumbs { color: #4a4f63; }
+.s-press .page-head::after { content: "NEWS"; right: 3%; top: 50%; transform: translateY(-50%); font-family: var(--display); font-weight: 800;
+  font-size: clamp(4rem, 12vw, 9rem); letter-spacing: -.05em; line-height: 1; color: transparent; -webkit-text-stroke: 1.5px rgba(11,14,34,.14); }
+
+/* Artists directory: woven zigzags */
+.s-weave .page-head { background-color: #141938;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='24' fill='none'%3E%3Cpath d='M0 18 L12 6 L24 18 L36 6 L48 18' stroke='%23f2843a' stroke-opacity='.4' stroke-width='1.6'/%3E%3C/svg%3E"),
+    linear-gradient(160deg, #141938, #2a1d3d); background-size: 48px 24px, auto; }
+.s-weave .page-head::before { inset: 0; background: linear-gradient(90deg, rgba(20,25,56,.95) 20%, rgba(20,25,56,0) 65%); }
+
+/* Jobs, tenders and resources: blueprint grid */
+.s-grid .page-head { background-color: #e8eef8;
+  background-image: linear-gradient(rgba(31,37,80,.08) 1px, transparent 1px), linear-gradient(90deg, rgba(31,37,80,.08) 1px, transparent 1px);
+  background-size: 28px 28px; }
+.s-grid .page-head h1, .s-grid .page-head a { color: var(--night); }
+.s-grid .page-head p, .s-grid .page-head .crumbs { color: #3d4566; }
+.s-grid .page-head::after { right: 7%; top: 50%; width: 110px; height: 110px; transform: translateY(-50%) rotate(12deg); border-radius: 28px;
+  background: linear-gradient(135deg, var(--sky), #6b95fc); opacity: .85; box-shadow: -70px 40px 0 -24px rgba(242,132,58,.85); }
+
+/* Partner: dusk to gold with diamonds */
+.s-gold .page-head { background: linear-gradient(120deg, #2a1d3d, #4b2a2e 50%, #b8741f); }
+.s-gold .page-head::after { right: 0; top: 0; width: 50%; height: 100%; opacity: .45;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' fill='none'%3E%3Cpath d='M20 4 L36 20 L20 36 L4 20 Z' stroke='%23f4c35a' stroke-width='1.3'/%3E%3C/svg%3E");
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 70%); mask-image: linear-gradient(90deg, transparent, #000 70%); }
+
+/* Endorsements: deep green with an official seal */
+.s-seal .page-head { background: linear-gradient(140deg, #0d2f2a, #145046); }
+.s-seal .page-head p, .s-seal .page-head .crumbs { color: #cfe8e1; }
+.s-seal .page-head::after { right: 5%; top: 50%; width: 160px; height: 160px; transform: translateY(-50%) rotate(-10deg); opacity: .5;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' fill='none' stroke='%23f4c35a'%3E%3Ccircle cx='50' cy='50' r='46' stroke-width='2'/%3E%3Ccircle cx='50' cy='50' r='38' stroke-dasharray='3 3'/%3E%3Cpath d='M32 52 L45 64 L69 38' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat; }
+
+/* Gallery: spotlight circles on violet */
+.s-lilac .page-head { background: radial-gradient(260px 260px at 80% 30%, rgba(255,107,74,.55), transparent 70%),
+  radial-gradient(300px 300px at 95% 90%, rgba(99,195,236,.5), transparent 70%), linear-gradient(130deg, #2b1f5c, #6a4bd8); }
+.s-lilac .page-head p, .s-lilac .page-head .crumbs { color: #e6e0ff; }
+
+/* Privacy and data protection: calm mint with a shield */
+.s-calm .page-head { background: linear-gradient(120deg, #dff4ec, #cfe9f5); }
+.s-calm .page-head h1, .s-calm .page-head a { color: #0e3b33; }
+.s-calm .page-head p, .s-calm .page-head .crumbs { color: #2f5a52; }
+.s-calm .page-head::after { right: 6%; top: 50%; width: 100px; height: 120px; transform: translateY(-50%); opacity: .35;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 28' fill='none' stroke='%230e3b33' stroke-width='1.6'%3E%3Cpath d='M12 1 L22 5 V13 C22 20 17 25 12 27 C7 25 2 20 2 13 V5 Z'/%3E%3Cpath d='M8 14 L11 17 L16 11' stroke-linecap='round'/%3E%3C/svg%3E") center/contain no-repeat; }
+
+@media (max-width: 1000px) { .s-press .page-head::after { display: none; } }
+@media (max-width: 700px) {
+  .page-head { padding: 1.6rem 0 1.4rem; }
+  .page-head::after { opacity: .18 !important; }
+  .s-press .page-head::after { display: none; }
+  .s-grid .page-head::after { width: 64px; height: 64px; right: 4%; box-shadow: none; }
+}

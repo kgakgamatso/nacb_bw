@@ -140,6 +140,10 @@
     nums.forEach(function (n) { io.observe(n); });
   }
 
+  /* ---------- Keep the current page's tab in view in the scrolling nav row ---------- */
+  var cur = document.querySelector('.main-nav a[aria-current="page"]');
+  if (cur) { var ul = cur.closest("ul"); if (ul && ul.scrollWidth > ul.clientWidth) ul.scrollLeft += cur.getBoundingClientRect().left - ul.getBoundingClientRect().left - 16; }
+
   /* ---------- Glowing cursor ---------- */
   var fine = window.matchMedia && window.matchMedia("(hover: hover) and (pointer: fine)").matches;
   var dot = document.querySelector(".cursor-dot"), ring = document.querySelector(".cursor-ring");
